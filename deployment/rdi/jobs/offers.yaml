@@ -1,0 +1,23 @@
+name: value_travel_offers
+source:
+  server_name: mysql
+  db: value_travel
+  table: offers
+output:
+  - uses: redis.write
+    with:
+      connection: target
+      data_type: json
+      key:
+        expression: concat(['value-travel:context:offer:', package_id])
+        language: jmespath
+      mapping:
+        - package_id
+        - name
+        - destination
+        - total_price
+        - available_rooms
+        - eligible_reward_base
+        - cancellation
+        - departure_date
+        - data_label

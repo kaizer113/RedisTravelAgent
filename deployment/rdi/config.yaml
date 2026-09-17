@@ -1,0 +1,30 @@
+# MySQL on the shared demo VM; only lg-rdi may connect through the VPC firewall.
+# Validated and deployed with RDI 2.0.0.
+sources:
+  mysql:
+    type: cdc
+    connection:
+      type: mysql
+      host: 10.42.0.3
+      port: 3307
+      user: ${MYSQL_DB_USERNAME}
+      password: ${MYSQL_DB_PASSWORD}
+    databases:
+      - value_travel
+    tables:
+      value_travel.offers: {}
+    advanced:
+      source:
+        decimal.handling.mode: double
+        database.allowPublicKeyRetrieval: true
+targets:
+  target:
+    connection:
+      type: redis
+      host: cantabile-consummate-micropolished-92484.db.redis.io
+      port: 17518
+      user: ${TARGET_DB_USERNAME}
+      password: ${TARGET_DB_PASSWORD}
+processors:
+  type: classic
+  target_data_type: json

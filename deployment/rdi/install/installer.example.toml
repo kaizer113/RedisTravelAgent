@@ -1,0 +1,16 @@
+# RDI 2.0.0 reads TOML, despite its --help describing YAML.
+# Copy outside the repository, replace credentials, and chmod 600 before use.
+nameservers = ["169.254.169.254"]
+https_port = 443
+scaffold = false
+db_index = 1
+
+[rdi.k8s]
+namespace = "rdi"
+
+[rdi.database]
+host = "YOUR_PRIVATE_STATE_DATABASE_HOST"
+port = 11784
+username = "default"
+password = "REPLACE_WITH_STATE_DATABASE_PASSWORD"
+ssl = false

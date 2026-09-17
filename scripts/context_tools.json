@@ -1,0 +1,1315 @@
+[
+  {
+    "description": "Count Offer records without retrieving individual records.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "else": {
+        "required": [
+          "field"
+        ]
+      },
+      "if": {
+        "properties": {
+          "function": {
+            "const": "count"
+          }
+        },
+        "required": [
+          "function"
+        ]
+      },
+      "properties": {
+        "field": {
+          "description": "Scalar TAG or NUMERIC field whose distinct values should be counted.",
+          "enum": [
+            "available_rooms",
+            "data_label",
+            "departure_date",
+            "destination",
+            "eligible_reward_base",
+            "total_price"
+          ],
+          "type": "string"
+        },
+        "function": {
+          "description": "Aggregation function to execute. count takes no field; count_distinct requires one eligible field.",
+          "enum": [
+            "count",
+            "count_distinct"
+          ],
+          "type": "string"
+        },
+        "group_by": {
+          "description": "Optional scalar TAG field to group counts by.",
+          "enum": [
+            "data_label",
+            "departure_date",
+            "destination"
+          ],
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "description": "Maximum number of groups to return (default: 10)",
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "description": "Number of groups to skip (default: 0)",
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "description": "Optional positive Redis execution timeout in milliseconds; the live server maximum is enforced.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "function"
+      ],
+      "then": {
+        "not": {
+          "required": [
+            "field"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "name": "count_offer"
+  },
+  {
+    "description": "Count Reservation records without retrieving individual records.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "else": {
+        "required": [
+          "field"
+        ]
+      },
+      "if": {
+        "properties": {
+          "function": {
+            "const": "count"
+          }
+        },
+        "required": [
+          "function"
+        ]
+      },
+      "properties": {
+        "field": {
+          "description": "Scalar TAG or NUMERIC field whose distinct values should be counted.",
+          "enum": [
+            "balance_due",
+            "departure_date",
+            "member_id",
+            "package_id",
+            "status"
+          ],
+          "type": "string"
+        },
+        "function": {
+          "description": "Aggregation function to execute. count takes no field; count_distinct requires one eligible field.",
+          "enum": [
+            "count",
+            "count_distinct"
+          ],
+          "type": "string"
+        },
+        "group_by": {
+          "description": "Optional scalar TAG field to group counts by.",
+          "enum": [
+            "departure_date",
+            "member_id",
+            "package_id",
+            "status"
+          ],
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "description": "Maximum number of groups to return (default: 10)",
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "description": "Number of groups to skip (default: 0)",
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "description": "Optional positive Redis execution timeout in milliseconds; the live server maximum is enforced.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "function"
+      ],
+      "then": {
+        "not": {
+          "required": [
+            "field"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "name": "count_reservation"
+  },
+  {
+    "description": "Count Traveler records without retrieving individual records.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "else": {
+        "required": [
+          "field"
+        ]
+      },
+      "if": {
+        "properties": {
+          "function": {
+            "const": "count"
+          }
+        },
+        "required": [
+          "function"
+        ]
+      },
+      "properties": {
+        "field": {
+          "description": "Scalar TAG or NUMERIC field whose distinct values should be counted.",
+          "enum": [
+            "home_airport",
+            "tier"
+          ],
+          "type": "string"
+        },
+        "function": {
+          "description": "Aggregation function to execute. count takes no field; count_distinct requires one eligible field.",
+          "enum": [
+            "count",
+            "count_distinct"
+          ],
+          "type": "string"
+        },
+        "group_by": {
+          "description": "Optional scalar TAG field to group counts by.",
+          "enum": [
+            "home_airport",
+            "tier"
+          ],
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "description": "Maximum number of groups to return (default: 10)",
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "description": "Number of groups to skip (default: 0)",
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "description": "Optional positive Redis execution timeout in milliseconds; the live server maximum is enforced.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "function"
+      ],
+      "then": {
+        "not": {
+          "required": [
+            "field"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "name": "count_traveler"
+  },
+  {
+    "description": "Return the records in the FIRST set that are not in any of the others (set difference). All sets must resolve to the same entity. Each set states which records it selects: the entity (Offer, Reservation, Traveler) plus tag_conditions, numeric_conditions or text_query. The whole matching set is used, not a page of it, so this combines sets far larger than a response can carry. Add expand_to to follow a relationship after retrieval, which is how one call combines sets that start in different entities.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "sets": {
+          "description": "Two or more sets to combine (at most 8), all resolving to the same entity.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "entity": {
+                "description": "Which entity this set selects.",
+                "enum": [
+                  "Offer",
+                  "Reservation",
+                  "Traveler"
+                ],
+                "type": "string"
+              },
+              "expand_to": {
+                "description": "Optional relationship to follow after retrieving this set, bringing it to the related entity. Named exactly as listed here: this data model declares none.",
+                "type": "string"
+              },
+              "numeric_conditions": {
+                "description": "Inclusive numeric-range conditions, ANDed together. At most 16 conditions in total across this and tag_conditions.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "description": "Numeric field on the entity.",
+                      "type": "string"
+                    },
+                    "max_value": {
+                      "description": "Inclusive upper bound; omit for unbounded.",
+                      "type": "number"
+                    },
+                    "min_value": {
+                      "description": "Inclusive lower bound; omit for unbounded.",
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 16,
+                "type": "array"
+              },
+              "tag_conditions": {
+                "description": "Exact-match tag conditions, ANDed together. At most 16 conditions in total across this and numeric_conditions.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "exclude": {
+                      "description": "Match records that do NOT have this value.",
+                      "type": "boolean"
+                    },
+                    "field": {
+                      "description": "Tag field on the entity.",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Exact tag value.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "value"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 16,
+                "type": "array"
+              },
+              "text_match_mode": {
+                "description": "How text_query terms combine: any (default), all, or phrase (contiguous, in order). A double-quoted text_query is treated as phrase whatever this says.",
+                "enum": [
+                  "any",
+                  "all",
+                  "phrase"
+                ],
+                "type": "string"
+              },
+              "text_query": {
+                "description": "Lexical text to match on the entity's text fields. Use instead of the condition arrays when the set is defined by text rather than by field values.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "entity"
+            ],
+            "type": "object"
+          },
+          "maxItems": 8,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "sets"
+      ],
+      "type": "object"
+    },
+    "name": "except_results"
+  },
+  {
+    "description": "Follow a declared relationship from one set to the related entity and return that entity's records. This is the only tool here that changes entity; use it when a question joins two entities, then combine the results. Each set states which records it selects: the entity (Offer, Reservation, Traveler) plus tag_conditions, numeric_conditions or text_query. The whole matching set is used, not a page of it, so this combines sets far larger than a response can carry. Relationships you can follow: this data model declares none.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "relationship": {
+          "description": "Relationship to follow. Declared hops: this data model declares none.",
+          "type": "string"
+        },
+        "set": {
+          "additionalProperties": false,
+          "properties": {
+            "entity": {
+              "description": "Which entity this set selects.",
+              "enum": [
+                "Offer",
+                "Reservation",
+                "Traveler"
+              ],
+              "type": "string"
+            },
+            "numeric_conditions": {
+              "description": "Inclusive numeric-range conditions, ANDed together. At most 16 conditions in total across this and tag_conditions.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "field": {
+                    "description": "Numeric field on the entity.",
+                    "type": "string"
+                  },
+                  "max_value": {
+                    "description": "Inclusive upper bound; omit for unbounded.",
+                    "type": "number"
+                  },
+                  "min_value": {
+                    "description": "Inclusive lower bound; omit for unbounded.",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "field"
+                ],
+                "type": "object"
+              },
+              "maxItems": 16,
+              "type": "array"
+            },
+            "tag_conditions": {
+              "description": "Exact-match tag conditions, ANDed together. At most 16 conditions in total across this and numeric_conditions.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "exclude": {
+                    "description": "Match records that do NOT have this value.",
+                    "type": "boolean"
+                  },
+                  "field": {
+                    "description": "Tag field on the entity.",
+                    "type": "string"
+                  },
+                  "value": {
+                    "description": "Exact tag value.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "field",
+                  "value"
+                ],
+                "type": "object"
+              },
+              "maxItems": 16,
+              "type": "array"
+            },
+            "text_match_mode": {
+              "description": "How text_query terms combine: any (default), all, or phrase (contiguous, in order). A double-quoted text_query is treated as phrase whatever this says.",
+              "enum": [
+                "any",
+                "all",
+                "phrase"
+              ],
+              "type": "string"
+            },
+            "text_query": {
+              "description": "Lexical text to match on the entity's text fields. Use instead of the condition arrays when the set is defined by text rather than by field values.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "entity"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "set",
+        "relationship"
+      ],
+      "type": "object"
+    },
+    "name": "expand_results"
+  },
+  {
+    "description": "Filter Offer by one or MORE field conditions in a single call; a record is returned only if it satisfies ALL conditions (AND) across tag_conditions and numeric_conditions. Tag fields (tag_conditions, exact match): destination: destination; departure_date: departure date; data_label: data label. Numeric fields (numeric_conditions, inclusive range): total_price: total price; available_rooms: available rooms; eligible_reward_base: eligible reward base.",
+    "inputSchema": {
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "numeric_conditions": {
+          "description": "Inclusive numeric-range conditions, ANDed with every other condition. Omit the parameter (or pass []) when there are none. At most 16 conditions in total across both arrays.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "description": "The numeric field this condition applies to.",
+                "enum": [
+                  "total_price",
+                  "available_rooms",
+                  "eligible_reward_base"
+                ],
+                "type": "string"
+              },
+              "max_value": {
+                "description": "Inclusive upper bound. Omit the key for an unbounded side.",
+                "type": "number"
+              },
+              "min_value": {
+                "description": "Inclusive lower bound. Omit the key for an unbounded side.",
+                "type": "number"
+              }
+            },
+            "required": [
+              "field"
+            ],
+            "type": "object"
+          },
+          "maxItems": 16,
+          "type": "array"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "sort_by": {
+          "description": "Optional sortable numeric field to order results by. Valid values: total_price, available_rooms, eligible_reward_base.",
+          "enum": [
+            "total_price",
+            "available_rooms",
+            "eligible_reward_base"
+          ],
+          "type": "string"
+        },
+        "sort_order": {
+          "default": "desc",
+          "description": "Optional sort direction. Valid values: asc, desc. Defaults to desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "type": "string"
+        },
+        "tag_conditions": {
+          "description": "Exact-match tag conditions, ANDed with every other condition. Omit the parameter (or pass []) when there are none. At most 16 conditions in total across both arrays.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "exclude": {
+                "description": "When true, match records where this field is present and does not contain the exact value.",
+                "type": "boolean"
+              },
+              "field": {
+                "description": "The tag field this condition applies to.",
+                "enum": [
+                  "destination",
+                  "departure_date",
+                  "data_label"
+                ],
+                "type": "string"
+              },
+              "value": {
+                "description": "Exact TAG value to match. For list-valued fields, matches when any list item equals this value.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "field",
+              "value"
+            ],
+            "type": "object"
+          },
+          "maxItems": 16,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "name": "filter_offer"
+  },
+  {
+    "description": "Filter Reservation by one or MORE field conditions in a single call; a record is returned only if it satisfies ALL conditions (AND) across tag_conditions and numeric_conditions. Tag fields (tag_conditions, exact match): member_id: member id; package_id: package id; status: status; departure_date: departure date. Numeric fields (numeric_conditions, inclusive range): balance_due: balance due.",
+    "inputSchema": {
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "numeric_conditions": {
+          "description": "Inclusive numeric-range conditions, ANDed with every other condition. Omit the parameter (or pass []) when there are none. At most 16 conditions in total across both arrays.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "description": "The numeric field this condition applies to.",
+                "enum": [
+                  "balance_due"
+                ],
+                "type": "string"
+              },
+              "max_value": {
+                "description": "Inclusive upper bound. Omit the key for an unbounded side.",
+                "type": "number"
+              },
+              "min_value": {
+                "description": "Inclusive lower bound. Omit the key for an unbounded side.",
+                "type": "number"
+              }
+            },
+            "required": [
+              "field"
+            ],
+            "type": "object"
+          },
+          "maxItems": 16,
+          "type": "array"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "sort_by": {
+          "description": "Optional sortable numeric field to order results by. Valid values: balance_due.",
+          "enum": [
+            "balance_due"
+          ],
+          "type": "string"
+        },
+        "sort_order": {
+          "default": "desc",
+          "description": "Optional sort direction. Valid values: asc, desc. Defaults to desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "type": "string"
+        },
+        "tag_conditions": {
+          "description": "Exact-match tag conditions, ANDed with every other condition. Omit the parameter (or pass []) when there are none. At most 16 conditions in total across both arrays.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "exclude": {
+                "description": "When true, match records where this field is present and does not contain the exact value.",
+                "type": "boolean"
+              },
+              "field": {
+                "description": "The tag field this condition applies to.",
+                "enum": [
+                  "member_id",
+                  "package_id",
+                  "status",
+                  "departure_date"
+                ],
+                "type": "string"
+              },
+              "value": {
+                "description": "Exact TAG value to match. For list-valued fields, matches when any list item equals this value.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "field",
+              "value"
+            ],
+            "type": "object"
+          },
+          "maxItems": 16,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "name": "filter_reservation"
+  },
+  {
+    "description": "Filter Traveler by one or MORE field conditions in a single call; a record is returned only if it satisfies ALL conditions (AND) across tag_conditions. Tag fields (tag_conditions, exact match): tier: tier; home_airport: home airport.",
+    "inputSchema": {
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "tag_conditions": {
+          "description": "Exact-match tag conditions, ANDed with every other condition. Omit the parameter (or pass []) when there are none.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "exclude": {
+                "description": "When true, match records where this field is present and does not contain the exact value.",
+                "type": "boolean"
+              },
+              "field": {
+                "description": "The tag field this condition applies to.",
+                "enum": [
+                  "tier",
+                  "home_airport"
+                ],
+                "type": "string"
+              },
+              "value": {
+                "description": "Exact TAG value to match. For list-valued fields, matches when any list item equals this value.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "field",
+              "value"
+            ],
+            "type": "object"
+          },
+          "maxItems": 16,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "name": "filter_traveler"
+  },
+  {
+    "description": "Get Offer by ID using a key lookup. ID field package_id: package id.",
+    "inputSchema": {
+      "properties": {
+        "id": {
+          "description": "The ID of the Offer to retrieve. Pass only the key component, for example id=\"3\"; do not pass the full Redis key value-travel:context:offer:3. package id.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "name": "get_offer_by_id"
+  },
+  {
+    "description": "Get Reservation by ID using a key lookup. ID field reservation_id: reservation id.",
+    "inputSchema": {
+      "properties": {
+        "id": {
+          "description": "The ID of the Reservation to retrieve. Pass only the key component, for example id=\"3\"; do not pass the full Redis key value-travel:context:reservation:3. reservation id.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "name": "get_reservation_by_id"
+  },
+  {
+    "description": "Get Traveler by ID using a key lookup. ID field member_id: Signed-in synthetic traveler ID.",
+    "inputSchema": {
+      "properties": {
+        "id": {
+          "description": "The ID of the Traveler to retrieve. Pass only the key component, for example id=\"3\"; do not pass the full Redis key value-travel:context:traveler:3. Signed-in synthetic traveler ID.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "name": "get_traveler_by_id"
+  },
+  {
+    "description": "Return the records present in EVERY given set (AND) -- the conjunctive filter the per-entity tools cannot express. All sets must resolve to the same entity; use expand_to on one of them to bring it to the same entity first. Each set states which records it selects: the entity (Offer, Reservation, Traveler) plus tag_conditions, numeric_conditions or text_query. The whole matching set is used, not a page of it, so this combines sets far larger than a response can carry. Add expand_to to follow a relationship after retrieval, which is how one call combines sets that start in different entities.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "sets": {
+          "description": "Two or more sets to combine (at most 8), all resolving to the same entity.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "entity": {
+                "description": "Which entity this set selects.",
+                "enum": [
+                  "Offer",
+                  "Reservation",
+                  "Traveler"
+                ],
+                "type": "string"
+              },
+              "expand_to": {
+                "description": "Optional relationship to follow after retrieving this set, bringing it to the related entity. Named exactly as listed here: this data model declares none.",
+                "type": "string"
+              },
+              "numeric_conditions": {
+                "description": "Inclusive numeric-range conditions, ANDed together. At most 16 conditions in total across this and tag_conditions.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "description": "Numeric field on the entity.",
+                      "type": "string"
+                    },
+                    "max_value": {
+                      "description": "Inclusive upper bound; omit for unbounded.",
+                      "type": "number"
+                    },
+                    "min_value": {
+                      "description": "Inclusive lower bound; omit for unbounded.",
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 16,
+                "type": "array"
+              },
+              "tag_conditions": {
+                "description": "Exact-match tag conditions, ANDed together. At most 16 conditions in total across this and numeric_conditions.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "exclude": {
+                      "description": "Match records that do NOT have this value.",
+                      "type": "boolean"
+                    },
+                    "field": {
+                      "description": "Tag field on the entity.",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Exact tag value.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "value"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 16,
+                "type": "array"
+              },
+              "text_match_mode": {
+                "description": "How text_query terms combine: any (default), all, or phrase (contiguous, in order). A double-quoted text_query is treated as phrase whatever this says.",
+                "enum": [
+                  "any",
+                  "all",
+                  "phrase"
+                ],
+                "type": "string"
+              },
+              "text_query": {
+                "description": "Lexical text to match on the entity's text fields. Use instead of the condition arrays when the set is defined by text rather than by field values.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "entity"
+            ],
+            "type": "object"
+          },
+          "maxItems": 8,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "sets"
+      ],
+      "type": "object"
+    },
+    "name": "intersect_results"
+  },
+  {
+    "description": "List Offer, optionally sorted by a numeric field. Valid sort_by fields: total_price, available_rooms, eligible_reward_base.",
+    "inputSchema": {
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "sort_by": {
+          "description": "Optional sortable numeric field to order results by. Valid values: total_price, available_rooms, eligible_reward_base.",
+          "enum": [
+            "total_price",
+            "available_rooms",
+            "eligible_reward_base"
+          ],
+          "type": "string"
+        },
+        "sort_order": {
+          "default": "desc",
+          "description": "Optional sort direction. Valid values: asc, desc. Defaults to desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "name": "list_offer"
+  },
+  {
+    "description": "List Reservation, optionally sorted by a numeric field. Valid sort_by fields: balance_due.",
+    "inputSchema": {
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "sort_by": {
+          "description": "Optional sortable numeric field to order results by. Valid values: balance_due.",
+          "enum": [
+            "balance_due"
+          ],
+          "type": "string"
+        },
+        "sort_order": {
+          "default": "desc",
+          "description": "Optional sort direction. Valid values: asc, desc. Defaults to desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "name": "list_reservation"
+  },
+  {
+    "description": "Lexical full-text search (not semantic) for Offer. By default, results use Redis relevance ordering; sort_by overrides it when available. Full-text search over only these TEXT-indexed fields: name: name. cancellation: cancellation.",
+    "inputSchema": {
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "match_mode": {
+          "default": "any",
+          "description": "How multiple query terms are combined: 'any' matches at least one term; 'all' requires every term; 'phrase' requires them contiguously and in order. Defaults to 'any'. A double-quoted query is treated as 'phrase' whatever this says.",
+          "enum": [
+            "any",
+            "all",
+            "phrase"
+          ],
+          "type": "string"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "query": {
+          "description": "The lexical text to search for (not semantic). Terms are combined according to match_mode; wrap the query in double quotes to match the words contiguously and in order (an exact phrase). Special RediSearch syntax is unsupported; operators are treated as literal text. Only these TEXT-indexed fields are searched: name: name. cancellation: cancellation.",
+          "type": "string"
+        },
+        "sort_by": {
+          "description": "Optional sortable numeric field to order results by. Valid values: total_price, available_rooms, eligible_reward_base.",
+          "enum": [
+            "total_price",
+            "available_rooms",
+            "eligible_reward_base"
+          ],
+          "type": "string"
+        },
+        "sort_order": {
+          "default": "desc",
+          "description": "Optional sort direction. Valid values: asc, desc. Defaults to desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    },
+    "name": "search_offer_by_text"
+  },
+  {
+    "description": "Lexical full-text search (not semantic) for Reservation. By default, results use Redis relevance ordering; sort_by overrides it when available. Full-text search over only these TEXT-indexed fields: notes: notes.",
+    "inputSchema": {
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "match_mode": {
+          "default": "any",
+          "description": "How multiple query terms are combined: 'any' matches at least one term; 'all' requires every term; 'phrase' requires them contiguously and in order. Defaults to 'any'. A double-quoted query is treated as 'phrase' whatever this says.",
+          "enum": [
+            "any",
+            "all",
+            "phrase"
+          ],
+          "type": "string"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "query": {
+          "description": "The lexical text to search for (not semantic). Terms are combined according to match_mode; wrap the query in double quotes to match the words contiguously and in order (an exact phrase). Special RediSearch syntax is unsupported; operators are treated as literal text. Only these TEXT-indexed fields are searched: notes: notes.",
+          "type": "string"
+        },
+        "sort_by": {
+          "description": "Optional sortable numeric field to order results by. Valid values: balance_due.",
+          "enum": [
+            "balance_due"
+          ],
+          "type": "string"
+        },
+        "sort_order": {
+          "default": "desc",
+          "description": "Optional sort direction. Valid values: asc, desc. Defaults to desc.",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    },
+    "name": "search_reservation_by_text"
+  },
+  {
+    "description": "Lexical full-text search (not semantic) for Traveler. By default, results use Redis relevance ordering; sort_by overrides it when available. Full-text search over only these TEXT-indexed fields: name: name. household: household.",
+    "inputSchema": {
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "match_mode": {
+          "default": "any",
+          "description": "How multiple query terms are combined: 'any' matches at least one term; 'all' requires every term; 'phrase' requires them contiguously and in order. Defaults to 'any'. A double-quoted query is treated as 'phrase' whatever this says.",
+          "enum": [
+            "any",
+            "all",
+            "phrase"
+          ],
+          "type": "string"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "query": {
+          "description": "The lexical text to search for (not semantic). Terms are combined according to match_mode; wrap the query in double quotes to match the words contiguously and in order (an exact phrase). Special RediSearch syntax is unsupported; operators are treated as literal text. Only these TEXT-indexed fields are searched: name: name. household: household.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    },
+    "name": "search_traveler_by_text"
+  },
+  {
+    "description": "Summarize Offer numeric fields without retrieving individual records.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "description": "NUMERIC field to summarize.",
+          "enum": [
+            "available_rooms",
+            "eligible_reward_base",
+            "total_price"
+          ],
+          "type": "string"
+        },
+        "function": {
+          "description": "Numeric aggregation function to execute.",
+          "enum": [
+            "sum",
+            "avg",
+            "min",
+            "max"
+          ],
+          "type": "string"
+        },
+        "group_by": {
+          "description": "Optional scalar TAG field to group summaries by.",
+          "enum": [
+            "data_label",
+            "departure_date",
+            "destination"
+          ],
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "description": "Maximum number of groups to return (default: 10)",
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "description": "Number of groups to skip (default: 0)",
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "description": "Optional positive Redis execution timeout in milliseconds; the live server maximum is enforced.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "function",
+        "field"
+      ],
+      "type": "object"
+    },
+    "name": "summarize_offer"
+  },
+  {
+    "description": "Summarize Reservation numeric fields without retrieving individual records.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "description": "NUMERIC field to summarize.",
+          "enum": [
+            "balance_due"
+          ],
+          "type": "string"
+        },
+        "function": {
+          "description": "Numeric aggregation function to execute.",
+          "enum": [
+            "sum",
+            "avg",
+            "min",
+            "max"
+          ],
+          "type": "string"
+        },
+        "group_by": {
+          "description": "Optional scalar TAG field to group summaries by.",
+          "enum": [
+            "departure_date",
+            "member_id",
+            "package_id",
+            "status"
+          ],
+          "type": "string"
+        },
+        "limit": {
+          "default": 10,
+          "description": "Maximum number of groups to return (default: 10)",
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "offset": {
+          "default": 0,
+          "description": "Number of groups to skip (default: 0)",
+          "maximum": 10000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "description": "Optional positive Redis execution timeout in milliseconds; the live server maximum is enforced.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "function",
+        "field"
+      ],
+      "type": "object"
+    },
+    "name": "summarize_reservation"
+  },
+  {
+    "description": "Return the records present in ANY of the given sets (OR), de-duplicated. All sets must resolve to the same entity. Each set states which records it selects: the entity (Offer, Reservation, Traveler) plus tag_conditions, numeric_conditions or text_query. The whole matching set is used, not a page of it, so this combines sets far larger than a response can carry. Add expand_to to follow a relationship after retrieval, which is how one call combines sets that start in different entities.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return (default: 10, max: 100). A larger request returns 100 results; use offset to page through the rest.",
+          "type": "number"
+        },
+        "offset": {
+          "description": "Number of results to skip (default: 0)",
+          "type": "number"
+        },
+        "sets": {
+          "description": "Two or more sets to combine (at most 8), all resolving to the same entity.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "entity": {
+                "description": "Which entity this set selects.",
+                "enum": [
+                  "Offer",
+                  "Reservation",
+                  "Traveler"
+                ],
+                "type": "string"
+              },
+              "expand_to": {
+                "description": "Optional relationship to follow after retrieving this set, bringing it to the related entity. Named exactly as listed here: this data model declares none.",
+                "type": "string"
+              },
+              "numeric_conditions": {
+                "description": "Inclusive numeric-range conditions, ANDed together. At most 16 conditions in total across this and tag_conditions.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "field": {
+                      "description": "Numeric field on the entity.",
+                      "type": "string"
+                    },
+                    "max_value": {
+                      "description": "Inclusive upper bound; omit for unbounded.",
+                      "type": "number"
+                    },
+                    "min_value": {
+                      "description": "Inclusive lower bound; omit for unbounded.",
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 16,
+                "type": "array"
+              },
+              "tag_conditions": {
+                "description": "Exact-match tag conditions, ANDed together. At most 16 conditions in total across this and numeric_conditions.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "exclude": {
+                      "description": "Match records that do NOT have this value.",
+                      "type": "boolean"
+                    },
+                    "field": {
+                      "description": "Tag field on the entity.",
+                      "type": "string"
+                    },
+                    "value": {
+                      "description": "Exact tag value.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "field",
+                    "value"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 16,
+                "type": "array"
+              },
+              "text_match_mode": {
+                "description": "How text_query terms combine: any (default), all, or phrase (contiguous, in order). A double-quoted text_query is treated as phrase whatever this says.",
+                "enum": [
+                  "any",
+                  "all",
+                  "phrase"
+                ],
+                "type": "string"
+              },
+              "text_query": {
+                "description": "Lexical text to match on the entity's text fields. Use instead of the condition arrays when the set is defined by text rather than by field values.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "entity"
+            ],
+            "type": "object"
+          },
+          "maxItems": 8,
+          "minItems": 2,
+          "type": "array"
+        }
+      },
+      "required": [
+        "sets"
+      ],
+      "type": "object"
+    },
+    "name": "union_results"
+  }
+]

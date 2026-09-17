@@ -1,0 +1,48 @@
+services:
+  mysql:
+    image: mysql:8.0.44
+    container_name: value-travel-mysql
+    restart: unless-stopped
+    mem_limit: 768m
+    cpus: 0.75
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?required}
+      MYSQL_DATABASE: value_travel
+      MYSQL_USER: value_travel_cdc
+      MYSQL_PASSWORD: ${MYSQL_CDC_PASSWORD:?required}
+    command:
+      - --server-id=782179
+      - --log-bin=mysql-bin
+      - --binlog-format=ROW
+      - --binlog-row-image=FULL
+      - --binlog-expire-logs-seconds=864000
+      - --gtid-mode=ON
+      - --enforce-gtid-consistency=ON
+      - --binlog-rows-query-log-events=ON
+      - --innodb-buffer-pool-size=128M
+    ports:
+      - '${MYSQL_BIND_ADDRESS:-10.42.0.3}:3307:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/10-travel.sql:ro
+    labels:
+      owner: lionel_giavelli
+      skip_deletion: 'yes'
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '--silent']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks: [value-travel-data]
+volumes:
+  mysql-data:
+    name: value-travel-mysql-data
+    labels:
+      owner: lionel_giavelli
+      skip_deletion: 'yes'
+networks:
+  value-travel-data:
+    name: value-travel-data
+    labels:
+      owner: lionel_giavelli
+      skip_deletion: 'yes'

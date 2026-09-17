@@ -1,0 +1,32 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial","fontSize":"17px","primaryTextColor":"#172033","lineColor":"#475569","edgeLabelBackground":"#ffffff"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":42}}}%%
+flowchart TB
+  ui["VALUE TRAVEL browser<br/>Prompt buttons · package cards · shortlist<br/>Redis services dashboard · live trace"]
+    app["valuewholesale-demo · 10.42.0.3:8080<br/>FastAPI + Gemini function-calling loop<br/>RedisVL search · router · embedding cache"]
+    mysql[("MySQL · 10.42.0.3:3307<br/>18 fictional offers<br/>Prices · rooms · terms")]
+    rdi["lg-rdi · 10.42.0.4<br/>Ubuntu 24.04 · RDI 2.0.0<br/>Debezium CDC + classic processor"]
+    mysql -->|Private binlog stream| rdi
+  gemini["Vertex AI · Gemini<br/>Tool selection + generation"]
+    lc["LangCache<br/>Approved generic policies<br/>Hit skips generation"]
+    ram["Redis Agent Memory<br/>Session events + preferences<br/>Scoped by traveler"]
+    ctx["Context Retriever<br/>ValueTravelLio · 20 tools<br/>Traveler · Offer · Reservation"]
+    db[("Application Redis<br/>Catalog vectors · embeddings<br/>Offer JSON · traveler data<br/>Shortlists · trip notes")]
+    state[("RDI state database<br/>Separate from target<br/>noeviction · AOF")]
+    ctx -->|Read governed entities| db
+  ui -->|HTTP + streamed NDJSON| app
+  app <-->|Model calls + tool requests| gemini
+  app <-->|Safe policy cache| lc
+  app <-->|Recall + explicit writes| ram
+  app -->|Current offer verification| ctx
+  app <-->|Search · workspace · card refresh| db
+  rdi -->|Continuous Offer JSON updates| db
+  rdi <-->|Streams + checkpoints| state
+  classDef client fill:#edf5ff,stroke:#2563eb,color:#172033
+  classDef application fill:#fff5e8,stroke:#d97706,color:#4a2500
+  classDef redis fill:#fff0f0,stroke:#dc382d,color:#4a1512
+  classDef source fill:#edf9f0,stroke:#23834a,color:#153d29
+  classDef google fill:#eef5ff,stroke:#4285f4,color:#17365d
+  class ui client
+  class app application
+  class lc,ram,ctx,db,state,rdi redis
+  class mysql source
+  class gemini google
