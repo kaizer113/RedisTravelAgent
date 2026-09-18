@@ -9,7 +9,7 @@ network or an SSH tunnel when presenting with the unlock key.
 ## Present the replication loop
 
 1. Unlock the page and wait for MySQL and Redis to load.
-2. Change a row's price or room count inline and save it. Other fields can be edited
+2. Change a row's price or available room count inline and save it. Room capacity and other fields can be edited
    in the row details. The source change goes only to MySQL.
 3. Watch the independently read Redis value converge. Polling is an observation of
    replication, not a measurement of RDI's internal latency; reads aren't atomic.
@@ -26,6 +26,21 @@ catalog is a separately seeded vector index, so inserting an arbitrary new offer
 here does not automatically make a new package searchable in the travel assistant.
 Deleting a catalog offer can make a chat quote unavailable until it is restored.
 Earlier chat cards are historical results and do not update automatically.
+
+## Capacity and the RDI calculation
+
+**Room capacity** is the number of people accommodated by the offer (1–20), separate
+from available room inventory. Inspect shows the source capacity and the read-only
+**Average price per person**, stored as `average_price_per_person` in Redis.
+RDI computes `ROUND(total_price / room_capacity, 2)`; the field does not exist in
+MySQL and cannot be submitted through the editor. The estimate divides the whole
+package total by capacity, not by nights or available rooms.
+
+The refresh bar above **Observed state** fills over one second between reads and
+shows **Refreshing** while a request is in flight. It pauses when auto-refresh is
+off, the tab is hidden, or the Studio is locked. Requests do not overlap. A match
+compares all ten source fields and verifies the RDI-derived value; a missing or
+incorrect derived value is not a match.
 
 ## Access and operation
 

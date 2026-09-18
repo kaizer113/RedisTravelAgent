@@ -151,6 +151,7 @@ for i, (
             style=style,
             nights=nights,
             travelers=party,
+            room_capacity=party,
             total_price=price,
             shop_card=card,
             home_airport=airport,

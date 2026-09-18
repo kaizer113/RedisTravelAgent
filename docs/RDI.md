@@ -1,11 +1,12 @@
 # VALUE TRAVEL: MySQL to Redis Data Integration
 
-The fictional offer table is `value_travel.offers`. Its nine business fields match
+The fictional offer table is `value_travel.offers`. Its ten source fields feed
 `valuetravel/context_models.py`'s Offer. RDI is configured to write Redis JSON documents at keys
 `value-travel:context:offer:VT-001` through `VT-018`. Context Retriever reads those
-documents. The imported JSON documents contain exactly the nine business fields; there are no
-internal metadata fields to preserve. RDI replaces each document with the mapped
-source fields. MySQL remains authoritative for current prices and room availability.
+documents. The Redis JSON documents contain the ten source fields plus the RDI-calculated
+`average_price_per_person`; there are no internal metadata fields to preserve. RDI adds `ROUND(total_price / room_capacity, 2)` with a SQL `add_field` transform
+and replaces each document with the mapped source and calculated fields. Capacity
+means people accommodated by the offer; it is independent of available room count. MySQL remains authoritative for current prices and room availability.
 
 ## Current state
 

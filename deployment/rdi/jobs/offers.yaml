@@ -3,6 +3,15 @@ source:
   server_name: mysql
   db: value_travel
   table: offers
+transform:
+  - uses: add_field
+    with:
+      field: average_price_per_person
+      language: sql
+      expression: >-
+        CASE WHEN room_capacity > 0
+        THEN ROUND(1.0 * total_price / room_capacity, 2)
+        ELSE NULL END
 output:
   - uses: redis.write
     with:
@@ -17,6 +26,8 @@ output:
         - destination
         - total_price
         - available_rooms
+        - room_capacity
+        - average_price_per_person
         - eligible_reward_base
         - cancellation
         - departure_date

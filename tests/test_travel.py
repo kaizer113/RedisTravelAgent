@@ -327,6 +327,8 @@ def test_raw_offer_reads_context_retriever_json_document(monkeypatch):
     # Shape verified against JSON.GET on the provisioned Context Retriever data.
     document = {
         "available_rooms": 4,
+        "room_capacity": 4,
+        "average_price_per_person": 1472.5,
         "cancellation": "Refundable hotel until 30 days before departure; flight fare rules apply.",
         "data_label": "Synthetic demo offer",
         "departure_date": "2027-04-10",

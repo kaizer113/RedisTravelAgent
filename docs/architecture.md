@@ -75,8 +75,9 @@ ROW/FULL images with GTIDs enabled. The separate Ubuntu VM `lg-rdi` (`10.42.0.4`
 runs RDI 2.0.0, a Debezium collector and the classic processor on K3s. Both VMs are
 on `lg-peering-demo-vpc` / `lg-peering-demo-us-east4`.
 
-RDI replaces the nine business fields in `value-travel:context:offer:VT-001` through
-`VT-018` with JSON from MySQL. Context Retriever reads those documents. RDI's state
+RDI maps ten source fields and calculates `average_price_per_person` as the package
+price divided by room capacity, rounded to cents. It replaces the offer documents in `value-travel:context:offer:VT-001` through
+`VT-018` with JSON derived from MySQL. Context Retriever reads those documents. RDI's state
 database is separate from the target. Pod/service CIDRs avoid the VPC's 10.42 range.
 MySQL ingress is restricted to the RDI VM; the RDI HTTPS API is accessed locally
 through SSH. See [RDI.md](RDI.md) for deployment and verification commands.

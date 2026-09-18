@@ -18,6 +18,13 @@ class Offer(ContextModel):
     name: str = ContextField(description="name", index="text")
     destination: str = ContextField(description="destination", index="tag")
     total_price: float = ContextField(description="total price", index="numeric")
+    room_capacity: int = ContextField(
+        description="Number of people accommodated by this offer", index="numeric"
+    )
+    average_price_per_person: float = ContextField(
+        description="RDI-derived total_price divided by room_capacity, rounded to two decimal places",
+        index="numeric",
+    )
     available_rooms: int = ContextField(description="available rooms", index="numeric")
     eligible_reward_base: float = ContextField(
         description="eligible reward base", index="numeric"

@@ -38,7 +38,7 @@ uv run uvicorn valuetravel.api:app --port 8080
 uv run pytest -q
 ```
 
-Context setup writes credentials into `.env.context`; merge its scoped key and surface ID into runtime `.env`. After RDI takes ownership of offers, use `--skip-offers` during Context setup. Never overwrite live CDC prices with seed records.
+Context setup writes credentials into `.env.context`; merge its scoped key and surface ID into runtime `.env`. Context setup imports only travelers and reservations. MySQL/RDI populates offers and their calculated fields; it never overwrites those records from application fixtures.
 
 ## Deployment
 

@@ -1,11 +1,10 @@
-"""Provision VALUE TRAVEL with ctxctl and bootstrap synthetic context records.
+"""Provision VALUE TRAVEL models and synthetic traveler/reservation records.
 
-Offer bootstrap is optional: once RDI owns offers, use --skip-offers.
+Offer records, including calculated fields, are populated exclusively by MySQL/RDI.
 Credentials are written separately to .env.context, never printed.
 """
 
 from __future__ import annotations
-import argparse
 import asyncio
 import json
 import os
@@ -14,8 +13,8 @@ import subprocess
 from urllib.parse import unquote, urlparse
 from dotenv import dotenv_values
 from context_surfaces import UnifiedClient
-from valuetravel.context_models import Offer, Reservation, Traveler
-from valuetravel.data import MEMBERS, PACKAGES, RESERVATIONS
+from valuetravel.context_models import Reservation, Traveler
+from valuetravel.data import MEMBERS, RESERVATIONS
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -46,9 +45,6 @@ def cli(*args: str, admin_key: str):
 
 
 async def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--skip-offers", action="store_true")
-    args = parser.parse_args()
     env = {k: str(v or "") for k, v in dotenv_values(ROOT / ".env").items()}
     key = env["CTX_ADMIN_KEY"]
     previous = dotenv_values(ROOT / ".env.context")
@@ -115,8 +111,6 @@ async def main():
     secret_path.write_text(f"CTX_SURFACE_ID={sid}\nMCP_AGENT_KEY={agent_key}\n")
     print(f"Context Retriever surface: {sid}; credentials saved to .env.context")
     groups = [(Traveler, MEMBERS), (Reservation, RESERVATIONS)]
-    if not args.skip_offers:
-        groups.append((Offer, PACKAGES))
     async with UnifiedClient(timeout=60) as client:
         for model, rows in groups:
             fields = model.model_fields

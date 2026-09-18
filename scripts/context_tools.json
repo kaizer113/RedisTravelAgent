@@ -23,10 +23,12 @@
           "description": "Scalar TAG or NUMERIC field whose distinct values should be counted.",
           "enum": [
             "available_rooms",
+            "average_price_per_person",
             "data_label",
             "departure_date",
             "destination",
             "eligible_reward_base",
+            "room_capacity",
             "total_price"
           ],
           "type": "string"
@@ -469,7 +471,7 @@
     "name": "expand_results"
   },
   {
-    "description": "Filter Offer by one or MORE field conditions in a single call; a record is returned only if it satisfies ALL conditions (AND) across tag_conditions and numeric_conditions. Tag fields (tag_conditions, exact match): destination: destination; departure_date: departure date; data_label: data label. Numeric fields (numeric_conditions, inclusive range): total_price: total price; available_rooms: available rooms; eligible_reward_base: eligible reward base.",
+    "description": "Filter Offer by one or MORE field conditions in a single call; a record is returned only if it satisfies ALL conditions (AND) across tag_conditions and numeric_conditions. Tag fields (tag_conditions, exact match): destination: destination; departure_date: departure date; data_label: data label. Numeric fields (numeric_conditions, inclusive range): total_price: total price; room_capacity: Number of people accommodated by this offer; average_price_per_person: RDI-derived total_price divided by room_capacity, rounded to two decimal places; available_rooms: available rooms; eligible_reward_base: eligible reward base.",
     "inputSchema": {
       "properties": {
         "limit": {
@@ -485,6 +487,8 @@
                 "description": "The numeric field this condition applies to.",
                 "enum": [
                   "total_price",
+                  "room_capacity",
+                  "average_price_per_person",
                   "available_rooms",
                   "eligible_reward_base"
                 ],
@@ -512,9 +516,11 @@
           "type": "number"
         },
         "sort_by": {
-          "description": "Optional sortable numeric field to order results by. Valid values: total_price, available_rooms, eligible_reward_base.",
+          "description": "Optional sortable numeric field to order results by. Valid values: total_price, room_capacity, average_price_per_person, available_rooms, eligible_reward_base.",
           "enum": [
             "total_price",
+            "room_capacity",
+            "average_price_per_person",
             "available_rooms",
             "eligible_reward_base"
           ],
@@ -873,7 +879,7 @@
     "name": "intersect_results"
   },
   {
-    "description": "List Offer, optionally sorted by a numeric field. Valid sort_by fields: total_price, available_rooms, eligible_reward_base.",
+    "description": "List Offer, optionally sorted by a numeric field. Valid sort_by fields: total_price, room_capacity, average_price_per_person, available_rooms, eligible_reward_base.",
     "inputSchema": {
       "properties": {
         "limit": {
@@ -885,9 +891,11 @@
           "type": "number"
         },
         "sort_by": {
-          "description": "Optional sortable numeric field to order results by. Valid values: total_price, available_rooms, eligible_reward_base.",
+          "description": "Optional sortable numeric field to order results by. Valid values: total_price, room_capacity, average_price_per_person, available_rooms, eligible_reward_base.",
           "enum": [
             "total_price",
+            "room_capacity",
+            "average_price_per_person",
             "available_rooms",
             "eligible_reward_base"
           ],
@@ -967,9 +975,11 @@
           "type": "string"
         },
         "sort_by": {
-          "description": "Optional sortable numeric field to order results by. Valid values: total_price, available_rooms, eligible_reward_base.",
+          "description": "Optional sortable numeric field to order results by. Valid values: total_price, room_capacity, average_price_per_person, available_rooms, eligible_reward_base.",
           "enum": [
             "total_price",
+            "room_capacity",
+            "average_price_per_person",
             "available_rooms",
             "eligible_reward_base"
           ],
@@ -1085,7 +1095,9 @@
           "description": "NUMERIC field to summarize.",
           "enum": [
             "available_rooms",
+            "average_price_per_person",
             "eligible_reward_base",
+            "room_capacity",
             "total_price"
           ],
           "type": "string"

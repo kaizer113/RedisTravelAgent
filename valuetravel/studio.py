@@ -22,11 +22,13 @@ FIELDS = (
     "destination",
     "total_price",
     "available_rooms",
+    "room_capacity",
     "eligible_reward_base",
     "cancellation",
     "departure_date",
     "data_label",
 )
+REDIS_FIELDS = (*FIELDS, "average_price_per_person")
 COLUMNS = ", ".join(FIELDS)
 OfferID = Annotated[str, Path(pattern=r"^VT-[A-Z0-9-]{1,13}$", max_length=16)]
 
@@ -38,6 +40,7 @@ class Offer(BaseModel):
     destination: str = Field(min_length=1, max_length=80)
     total_price: Decimal = Field(ge=0, le=99999999, max_digits=10, decimal_places=2)
     available_rooms: int = Field(ge=0, le=1000000, strict=True)
+    room_capacity: int = Field(ge=1, le=20, strict=True)
     eligible_reward_base: Decimal = Field(
         ge=0, le=99999999, max_digits=10, decimal_places=2
     )
@@ -134,7 +137,7 @@ class OfferStore:
                     )
             if operation == "insert":
                 cur.execute(
-                    f"INSERT INTO offers ({COLUMNS}) VALUES ({', '.join(['%s'] * 9)})",
+                    f"INSERT INTO offers ({COLUMNS}) VALUES ({', '.join(['%s'] * len(FIELDS))})",
                     offer.values(),
                 )
             elif operation == "update":
@@ -154,7 +157,7 @@ class OfferStore:
                 for p in PACKAGES:
                     fixture = Offer(**{k: p[k] for k in FIELDS})
                     cur.execute(
-                        f"INSERT INTO offers ({COLUMNS}) VALUES ({', '.join(['%s'] * 9)}) ON DUPLICATE KEY UPDATE {', '.join(k + '=VALUES(' + k + ')' for k in FIELDS[1:])}",
+                        f"INSERT INTO offers ({COLUMNS}) VALUES ({', '.join(['%s'] * len(FIELDS))}) ON DUPLICATE KEY UPDATE {', '.join(k + '=VALUES(' + k + ')' for k in FIELDS[1:])}",
                         fixture.values(),
                     )
             else:
@@ -200,7 +203,7 @@ def create_router(settings, redis_client, context):
         for key in keys:
             value = redis_client.json().get(key)
             if value is not None:
-                rows.append({k: value.get(k) for k in FIELDS})
+                rows.append({k: value.get(k) for k in REDIS_FIELDS})
         return sorted(rows, key=lambda r: r["package_id"] or "")
 
     @router.get("/offers")
@@ -267,7 +270,7 @@ def create_router(settings, redis_client, context):
                 502, "Context Retriever verification unavailable"
             ) from exc
         if result.get("package_id") == package_id:
-            return {"found": True, "offer": {k: result.get(k) for k in FIELDS}}
+            return {"found": True, "offer": {k: result.get(k) for k in REDIS_FIELDS}}
         raise HTTPException(
             502,
             "Context Retriever did not return an offer; inspect Redis separately for deletion evidence",
