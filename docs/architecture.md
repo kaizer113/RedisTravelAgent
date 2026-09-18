@@ -42,6 +42,14 @@ Shortlist-card refreshes have a separate direct Redis JSON read path. Therefore,
 not every UI read passes through Context Retriever. Its 20 tools govern reads over
 Traveler, Offer and Reservation entities; they do not perform booking or payments.
 
+## Presenter Data Studio
+
+The separate `/studio` page uses presenter-key-protected APIs to edit, insert and delete
+MySQL offers with a table-scoped editor account. It compares the source with independent
+read-only Redis snapshots and offers an explicit Context Retriever lookup. Restore writes
+the 18 baseline records back to MySQL. No Studio operation writes Redis. New arbitrary
+offers are not automatically added to the separately seeded vector catalog.
+
 ## Data ownership
 
 | Data | Owner and storage | Behavior |

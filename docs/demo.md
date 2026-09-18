@@ -69,7 +69,7 @@ payment or inventory hold. The baseline payable difference is $600.
 
 ## 3. Prove the price is sourced from MySQL
 
-Optional live-data segment, approximately two minutes. In a terminal at this repository:
+Optional live-data segment, approximately two minutes. The visual option is [Data Studio](data-studio.md): unlock it, edit VT-001’s price to 5790, save, and watch its Redis copy update. Use the Context Retriever check, then restore the original price. The same sequence is also available in a terminal at this repository:
 
 ```sh
 .venv/bin/python scripts/rdi_offer.py VT-001 --price 5790 --verify

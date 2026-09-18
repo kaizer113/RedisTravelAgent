@@ -16,6 +16,7 @@ from .data import MEMBERS, PACKAGES, POLICIES
 from .managed import MemoryService, ContextRetrieverService
 from .search import Search
 from .cache import LangCache
+from .studio import create_router
 
 settings = get_settings()
 search = Search(settings)
@@ -43,6 +44,15 @@ async def lifespan(app):
 
 app = FastAPI(title="VALUE TRAVEL", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
+app.include_router(create_router(settings, search.redis, context))
+
+
+@app.get("/studio", response_class=HTMLResponse)
+async def data_studio():
+    return HTMLResponse(
+        (ROOT / "static" / "data-studio.html").read_text(),
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 def member(mid):

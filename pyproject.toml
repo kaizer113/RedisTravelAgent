@@ -4,10 +4,18 @@ version = "1.0.0"
 description = "VALUE TRAVEL — a Redis Iris travel concierge"
 requires-python = ">=3.11,<3.14"
 dependencies = [
- "context-surfaces>=0.0.1", "fastapi>=0.116", "google-genai>=2.24.0",
- "httpx>=0.28", "pydantic-settings>=2.10", "redis>=6.2",
- "redis-agent-memory==0.2.0", "redisvl>=0.23,<0.24",
- "sentence-transformers>=5.1,<6", "torch>=2.1,<3", "uvicorn[standard]>=0.35"
+ "context-surfaces>=0.0.1",
+ "fastapi>=0.116",
+ "google-genai>=2.24.0",
+ "httpx>=0.28",
+ "pydantic-settings>=2.10",
+ "pymysql[rsa]>=1.1,<2",
+ "redis>=6.2",
+ "redis-agent-memory==0.2.0",
+ "redisvl>=0.23,<0.24",
+ "sentence-transformers>=5.1,<6",
+ "torch>=2.1,<3",
+ "uvicorn[standard]>=0.35",
 ]
 [tool.uv.sources]
 torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]

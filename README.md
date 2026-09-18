@@ -22,6 +22,10 @@ Ask Package inclusions twice, or use “What do vacation packages include?” to
 
 All travelers, offers, prices, benefits and reservations are fictional. Package totals apply only to the stated dates, party size and airport. Future Shop Cards and modeled Executive rewards are separate from the payable total. No real booking, payment or cancellation is supported. The public demo has selectable synthetic personas, not customer authentication.
 
+## Data Studio
+
+Open [Data Studio](http://34.21.122.27:8080/studio) for presenter-key-protected inline MySQL edits, inserts, deletes, Redis comparisons and Context Retriever verification. Writes go only to MySQL. See [presenter instructions](docs/data-studio.md).
+
 ## Development
 
 Copy `.env.example` to `.env`, configure service credentials and Google ADC, then run:

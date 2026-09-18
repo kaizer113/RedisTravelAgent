@@ -13,6 +13,7 @@ flowchart TB
     state[("RDI state database<br/>Separate from target<br/>noeviction · AOF")]
     ctx -->|Read governed entities| db
   ui -->|HTTP + streamed NDJSON| app
+  app -->|Presenter-key-protected Studio CRUD| mysql
   app <-->|Model calls + tool requests| gemini
   app <-->|Safe policy cache| lc
   app <-->|Recall + explicit writes| ram
