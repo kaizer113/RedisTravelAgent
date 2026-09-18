@@ -39,7 +39,7 @@ SQL Server and cannot be submitted through the editor. The estimate divides the 
 package total by capacity, not by nights or available rooms.
 
 The refresh bar above **Observed state** fills over one second between reads and
-shows **Refreshing** while a request is in flight. It pauses when auto-refresh is
+keeps a fixed **Refresh** label. It pauses when auto-refresh is
 off, the tab is hidden, or the Studio is locked. Requests do not overlap. A match
 compares all ten source fields and verifies the RDI-derived value; a missing or
 incorrect derived value is not a match.
