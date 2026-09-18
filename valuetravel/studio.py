@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import hmac
 import logging
 from contextlib import contextmanager
 from datetime import date, datetime, timezone
@@ -11,7 +10,7 @@ from decimal import Decimal
 from typing import Annotated
 
 import pymssql
-from fastapi import APIRouter, Depends, Header, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .data import PACKAGES
@@ -180,15 +179,11 @@ class OfferStore:
 def create_router(settings, redis_client, context):
     store = OfferStore(settings)
 
-    async def authorize(x_studio_key: Annotated[str | None, Header()] = None):
-        if not settings.studio_key or not settings.studio_sqlserver_password:
+    async def configured():
+        if not settings.studio_sqlserver_password:
             raise HTTPException(503, "Data Studio is not configured")
-        if not x_studio_key or not hmac.compare_digest(
-            x_studio_key, settings.studio_key
-        ):
-            raise HTTPException(401, "Enter the presenter key to unlock Data Studio")
 
-    router = APIRouter(prefix="/api/studio", dependencies=[Depends(authorize)])
+    router = APIRouter(prefix="/api/studio", dependencies=[Depends(configured)])
 
     async def database_call(fn, *args, **kwargs):
         try:

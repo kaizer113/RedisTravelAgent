@@ -16,7 +16,7 @@ from valuetravel import studio
 @pytest.fixture
 def harness(monkeypatch):
     settings = SimpleNamespace(
-        studio_key="presenter-test-key", studio_sqlserver_password="local-test-password"
+        studio_sqlserver_password="local-test-password"
     )
     store = MagicMock(spec=studio.OfferStore)
     store.list.return_value = []
@@ -32,7 +32,7 @@ def harness(monkeypatch):
         store=store,
         redis=redis,
         context=context,
-        headers={"X-Studio-Key": "presenter-test-key"},
+        headers={},
     )
 
 
@@ -52,18 +52,15 @@ def offer():
     }
 
 
-@pytest.mark.parametrize("headers", [{}, {"X-Studio-Key": "wrong"}])
-def test_presenter_key_required_before_data_access(harness, headers):
-    response = harness.client.get("/api/studio/offers", headers=headers)
-    assert response.status_code == 401
-    harness.store.list.assert_not_called()
-    assert not harness.redis.mock_calls
+def test_studio_can_be_read_without_authentication(harness):
+    response = harness.client.get("/api/studio/offers")
+    assert response.status_code == 200
+    harness.store.list.assert_called_once()
 
 
-@pytest.mark.parametrize("setting", ["studio_key", "studio_sqlserver_password"])
-def test_studio_disabled_without_required_configuration(harness, setting):
-    setattr(harness.settings, setting, "")
-    response = harness.client.get("/api/studio/offers", headers=harness.headers)
+def test_studio_disabled_without_database_configuration(harness):
+    harness.settings.studio_sqlserver_password = ""
+    response = harness.client.get("/api/studio/offers")
     assert response.status_code == 503
     harness.store.list.assert_not_called()
 

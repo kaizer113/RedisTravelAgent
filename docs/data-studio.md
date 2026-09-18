@@ -1,14 +1,11 @@
 # VALUE TRAVEL Data Studio
 
 Open [Data Studio](http://34.21.122.27:8080/studio), or use the **Data Studio** link
-from the travel page. Enter the presenter key provided with the deployment. It is
-kept in browser session storage and sent in a request header, never in the URL.
-Use **Lock** when finished. This demo is currently served over HTTP; use a trusted
-network or an SSH tunnel when presenting with the unlock key.
+from the travel page. It opens directly with editing enabled; no key or login is required.
 
 ## Present the replication loop
 
-1. Unlock the page and wait for SQL Server and Redis to load. The table shows six offers
+1. Open the page and wait for SQL Server and Redis to load. The table shows six offers
    per page; Previous/Next reaches the remaining offers. Summary counts cover all
    offers, which also supply live prices to the travel concierge.
 2. Change a row's price or available room count inline and save it. Room capacity and other fields can be edited
@@ -42,7 +39,7 @@ package total by capacity, not by nights or available rooms.
 
 The refresh bar above **Observed state** fills over one second between reads and
 keeps a fixed **Refresh** label. It pauses when auto-refresh is
-off, the tab is hidden, or the Studio is locked. Requests do not overlap. A match
+off or the tab is hidden. Requests do not overlap. A match
 compares all ten source fields and verifies the RDI-derived value; a missing or
 incorrect derived value is not a match.
 
@@ -50,10 +47,10 @@ incorrect derived value is not a match.
 
 The backend uses a separate `value_travel_editor` SQL Server account with SELECT, INSERT,
 UPDATE and DELETE rights only on `value_travel.dbo.offers`. It does not use the `sa` or
-CDC account. `STUDIO_KEY` and `STUDIO_SQLSERVER_PASSWORD` are runtime secrets; no database
+CDC account. `STUDIO_SQLSERVER_PASSWORD` is a runtime secret; no database
 credential reaches the browser. Without configuration the API stays disabled.
 
-All Studio API operations require the presenter key. Updates and deletes carry the
+Studio API operations are unauthenticated. Updates and deletes carry the
 source row's `updated_at` version; conflicting edits return 409 instead of overwriting
 someone else's change. Studio maintains this timestamp with `SYSUTCDATETIME()`;
 manual SQL updates must also advance `updated_at` to preserve that conflict guard.

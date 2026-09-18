@@ -44,7 +44,7 @@ Traveler, Offer and Reservation entities; they do not perform booking or payment
 
 ## Presenter Data Studio
 
-The separate `/studio` page uses presenter-key-protected APIs to edit, insert and delete
+The separate `/studio` page uses unauthenticated APIs to edit, insert and delete
 SQL Server offers with a table-scoped editor account. It compares the source with independent
 read-only Redis snapshots and offers an explicit Context Retriever lookup. Restore writes
 the 18 baseline records back to SQL Server. No Studio operation writes Redis. New arbitrary

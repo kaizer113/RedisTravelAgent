@@ -24,7 +24,7 @@ All travelers, offers, prices, benefits and reservations are fictional. Package 
 
 ## Data Studio
 
-Open [Data Studio](http://34.21.122.27:8080/studio) for presenter-key-protected inline SQL Server edits, inserts, deletes, Redis comparisons and Context Retriever verification. Writes go only to SQL Server. See [presenter instructions](docs/data-studio.md).
+Open [Data Studio](http://34.21.122.27:8080/studio) for unauthenticated inline SQL Server edits, inserts, deletes, Redis comparisons and Context Retriever verification. Writes go only to SQL Server. See [presenter instructions](docs/data-studio.md).
 
 ## Development
 
