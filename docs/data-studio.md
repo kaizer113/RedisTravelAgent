@@ -13,7 +13,9 @@ network or an SSH tunnel when presenting with the unlock key.
    offers, which also supply live prices to the travel concierge.
 2. Change a row's price or available room count inline and save it. Room capacity and other fields can be edited
    in the row details. The source change goes only to SQL Server.
-3. Watch the independently read Redis value converge. Polling is an observation of
+3. Save row waits for the next automatic refresh to show updated values; it does
+   not trigger an immediate read. If auto-refresh is off, use Refresh. Watch the
+   independently read Redis value converge. Polling is an observation of
    replication, not a measurement of RDI's internal latency; reads aren't atomic.
 4. Check the offer through **Context Retriever** to show the agent's governed data path.
 5. Insert a new demo offer, then verify its Redis copy. Delete that new offer and
