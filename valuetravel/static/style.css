@@ -33,7 +33,6 @@
 .save-package:hover { border-color:var(--blue); background:#e2effd; }
 .save-package:disabled { cursor:default; color:#17624b; background:#edf9f2; border-color:#add2bf; }
 .demo-note { color:var(--muted); font-size:10px; margin:6px 0 12px; }
-.trip-workspace > .demo-note { margin-bottom:0; margin-top:12px; }
 .compact { padding:12px; }
 .compact h3 { font-size:14px; }
 .compact .package-price strong { font-size:21px; }

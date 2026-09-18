@@ -120,8 +120,7 @@ PROFILE = {
     "mark": "VT",
     "tagline": "Member value. Memorable journeys.",
     "headline": "Find your next escape.",
-    "headline_accent": "Bring your preferences.",
-    "intro": "Meet Vale, your travel concierge. Compare member value, build a shortlist, and pick up where you left off. Fictional offers. Real Redis services.",
+    "intro": "Meet Vale, your travel concierge. Compare member value, build a shortlist, and pick up where you left off.",
     "prompts": [
         {
             "label": "Family escape",
@@ -173,7 +172,6 @@ async def index():
         "MARK": "mark",
         "TAGLINE": "tagline",
         "HEADLINE": "headline",
-        "HEADLINE_ACCENT": "headline_accent",
         "INTRO": "intro",
         "THEME": "theme_stylesheet",
         "FAVICON": "favicon",
