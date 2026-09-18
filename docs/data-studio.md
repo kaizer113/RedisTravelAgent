@@ -8,7 +8,9 @@ network or an SSH tunnel when presenting with the unlock key.
 
 ## Present the replication loop
 
-1. Unlock the page and wait for MySQL and Redis to load.
+1. Unlock the page and wait for MySQL and Redis to load. The table shows six offers
+   per page; Previous/Next reaches the remaining offers. Summary counts cover all
+   offers, which also supply live prices to the travel concierge.
 2. Change a row's price or available room count inline and save it. Room capacity and other fields can be edited
    in the row details. The source change goes only to MySQL.
 3. Watch the independently read Redis value converge. Polling is an observation of
