@@ -1,15 +1,16 @@
-"""Presenter-only MySQL CRUD. Redis and Context Retriever are strictly read-only here."""
+"""Presenter-only SQL Server CRUD. Redis and Context Retriever are strictly read-only here."""
 
 from __future__ import annotations
 
 import asyncio
 import hmac
 import logging
+from contextlib import contextmanager
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Annotated
 
-import pymysql
+import pymssql
 from fastapi import APIRouter, Depends, Header, HTTPException, Path
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -94,24 +95,35 @@ class OfferStore:
 
     def connect(self):
         s = self.settings
-        return pymysql.connect(
-            host=s.studio_mysql_host,
-            port=s.studio_mysql_port,
-            user=s.studio_mysql_user,
-            password=s.studio_mysql_password,
+        return pymssql.connect(
+            server=s.studio_sqlserver_host,
+            port=str(s.studio_sqlserver_port),
+            user=s.studio_sqlserver_user,
+            password=s.studio_sqlserver_password,
             database="value_travel",
-            charset="utf8mb4",
-            cursorclass=pymysql.cursors.DictCursor,
-            connect_timeout=5,
-            read_timeout=10,
-            write_timeout=10,
+            charset="UTF-8",
+            as_dict=True,
+            login_timeout=5,
+            timeout=10,
+            tds_version="7.4",
             autocommit=False,
         )
 
+    @contextmanager
+    def transaction(self):
+        with self.connect() as conn:
+            try:
+                with conn.cursor() as cur:
+                    yield cur
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+
     def list(self):
-        with self.connect() as conn, conn.cursor() as cur:
+        with self.transaction() as cur:
             cur.execute(
-                f"SELECT {COLUMNS}, updated_at FROM offers ORDER BY package_id LIMIT 501"
+                f"SELECT TOP (501) {COLUMNS}, updated_at FROM dbo.offers ORDER BY package_id"
             )
             rows = cur.fetchall()
             if len(rows) > 500:
@@ -119,10 +131,10 @@ class OfferStore:
             return [serialize(r) for r in rows]
 
     def mutate(self, operation, offer=None, package_id=None, expected=None):
-        with self.connect() as conn, conn.cursor() as cur:
+        with self.transaction() as cur:
             if operation in ("update", "delete"):
                 cur.execute(
-                    "SELECT updated_at FROM offers WHERE package_id=%s FOR UPDATE",
+                    "SELECT updated_at FROM dbo.offers WITH (UPDLOCK, HOLDLOCK) WHERE package_id=%s",
                     (package_id,),
                 )
                 row = cur.fetchone()
@@ -137,39 +149,39 @@ class OfferStore:
                     )
             if operation == "insert":
                 cur.execute(
-                    f"INSERT INTO offers ({COLUMNS}) VALUES ({', '.join(['%s'] * len(FIELDS))})",
+                    f"INSERT INTO dbo.offers ({COLUMNS}) VALUES ({', '.join(['%s'] * len(FIELDS))})",
                     offer.values(),
                 )
             elif operation == "update":
                 cur.execute(
-                    f"UPDATE offers SET {', '.join(k + '=%s' for k in FIELDS[1:])}, updated_at=CURRENT_TIMESTAMP(6) WHERE package_id=%s",
+                    f"UPDATE dbo.offers SET {', '.join(k + '=%s' for k in FIELDS[1:])}, updated_at=SYSUTCDATETIME() WHERE package_id=%s",
                     (*offer.values()[1:], package_id),
                 )
             elif operation == "delete":
-                cur.execute("DELETE FROM offers WHERE package_id=%s", (package_id,))
+                cur.execute("DELETE FROM dbo.offers WHERE package_id=%s", (package_id,))
             elif operation == "restore":
                 # Only the dedicated synthetic offers table; no Redis or other demo writes.
                 ids = [p["package_id"] for p in PACKAGES]
                 cur.execute(
-                    f"DELETE FROM offers WHERE package_id NOT IN ({', '.join(['%s'] * len(ids))})",
-                    ids,
+                    f"DELETE FROM dbo.offers WHERE package_id NOT IN ({', '.join(['%s'] * len(ids))})",
+                    tuple(ids),
                 )
                 for p in PACKAGES:
                     fixture = Offer(**{k: p[k] for k in FIELDS})
                     cur.execute(
-                        f"INSERT INTO offers ({COLUMNS}) VALUES ({', '.join(['%s'] * len(FIELDS))}) ON DUPLICATE KEY UPDATE {', '.join(k + '=VALUES(' + k + ')' for k in FIELDS[1:])}",
-                        fixture.values(),
+                        f"UPDATE dbo.offers WITH (UPDLOCK, HOLDLOCK) SET {', '.join(k + '=%s' for k in FIELDS[1:])}, updated_at=SYSUTCDATETIME() WHERE package_id=%s; "
+                        f"IF @@ROWCOUNT = 0 INSERT INTO dbo.offers ({COLUMNS}) VALUES ({', '.join(['%s'] * len(FIELDS))})",
+                        (*fixture.values()[1:], fixture.package_id, *fixture.values()),
                     )
             else:
                 raise ValueError("Unsupported operation")
-            conn.commit()
 
 
 def create_router(settings, redis_client, context):
     store = OfferStore(settings)
 
     async def authorize(x_studio_key: Annotated[str | None, Header()] = None):
-        if not settings.studio_key or not settings.studio_mysql_password:
+        if not settings.studio_key or not settings.studio_sqlserver_password:
             raise HTTPException(503, "Data Studio is not configured")
         if not x_studio_key or not hmac.compare_digest(
             x_studio_key, settings.studio_key
@@ -181,12 +193,16 @@ def create_router(settings, redis_client, context):
     async def database_call(fn, *args, **kwargs):
         try:
             return await asyncio.to_thread(fn, *args, **kwargs)
-        except pymysql.IntegrityError as exc:
-            raise HTTPException(409, "An offer with this ID already exists") from exc
-        except pymysql.MySQLError as exc:
-            log.warning("Data Studio MySQL failure: %s", type(exc).__name__)
+        except pymssql.IntegrityError as exc:
+            if exc.args and exc.args[0] in (2601, 2627):
+                detail = "An offer with this ID already exists"
+            else:
+                detail = "The offer violates a database constraint"
+            raise HTTPException(409, detail) from exc
+        except pymssql.Error as exc:
+            log.warning("Data Studio SQL Server failure: %s", type(exc).__name__)
             raise HTTPException(
-                503, "MySQL is unavailable; no successful change was confirmed"
+                503, "SQL Server is unavailable; no successful change was confirmed"
             ) from exc
 
     def target_rows():
@@ -218,7 +234,7 @@ def create_router(settings, redis_client, context):
                 503, "Redis verification unavailable; replication status is unknown"
             ) from exc
         return {
-            "mysql": source,
+            "sqlserver": source,
             "redis": target,
             "checked_at": datetime.now(timezone.utc).isoformat(),
         }

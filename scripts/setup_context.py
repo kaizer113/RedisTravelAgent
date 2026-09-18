@@ -1,6 +1,6 @@
 """Provision VALUE TRAVEL models and synthetic traveler/reservation records.
 
-Offer records, including calculated fields, are populated exclusively by MySQL/RDI.
+Offer records, including calculated fields, are populated exclusively by SQL Server/RDI.
 Credentials are written separately to .env.context, never printed.
 """
 

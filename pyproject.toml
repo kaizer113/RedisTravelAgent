@@ -9,7 +9,7 @@ dependencies = [
  "google-genai>=2.24.0",
  "httpx>=0.28",
  "pydantic-settings>=2.10",
- "pymysql[rsa]>=1.1,<2",
+ "pymssql>=2.3,<3",
  "redis>=6.2",
  "redis-agent-memory==0.2.0",
  "redisvl>=0.23,<0.24",

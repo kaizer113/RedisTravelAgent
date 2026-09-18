@@ -18,7 +18,7 @@ Start with the customer experience. Reveal the trace after a package recommendat
 | Saved shortlist | “The decision survives the conversation.” | Saved package in **Your trip workspace**, retained after **+ New visit** |
 | Trip notes | “A temporary budget is a trip decision, not a permanent personal preference.” | **Save Trip Note** trace and workspace note |
 | Advisor draft | “The next person can start with the decisions and unresolved questions.” | Draft response; no external send action exists |
-| Source price update | “The recommendation consults current offer data, even when the earlier conversation contains an older price.” | MySQL change, RDI verification, subsequent Context Retriever offer lookup |
+| Source price update | “The recommendation consults current offer data, even when the earlier conversation contains an older price.” | SQL Server change, RDI verification, subsequent Context Retriever offer lookup |
 | Repeated policy question | “We can reuse approved general answers while keeping personalized and volatile answers out of the cache.” | Router decision, LangCache hit or miss, generation present or absent |
 
 ## What each service actually does here
@@ -33,7 +33,7 @@ Start with the customer experience. Reveal the trace after a package recommendat
 
 **LangCache** is used only for approved standalone policy questions that also pass the semantic route check. The allowlist is deliberately conservative. Price searches, comparisons, personal preferences, and reservation questions bypass it. Cache scopes include the application policy version, reset epoch, and model. **Reset demo cache** rotates the application's scope; old entries expire separately.
 
-**Redis Data Integration** streams the MySQL `offers` table into Redis JSON for Context Retriever. MySQL holds mutable price, availability, eligible-reward base, cancellation, and offer metadata. The static travel catalog and policy text are not all sourced from MySQL. The deployed configuration and dated validation evidence are in [RDI.md](RDI.md).
+**Redis Data Integration** streams the SQL Server `offers` table into Redis JSON for Context Retriever. SQL Server holds mutable price, availability, eligible-reward base, cancellation, and offer metadata. The static travel catalog and policy text are not all sourced from SQL Server. The deployed configuration and dated validation evidence are in [RDI.md](RDI.md).
 
 **Gemini** interprets the request, calls bounded application tools, and writes the answer. A LangCache hit skips generation. Use the configured model shown in the UI; do not promise a particular model is available without checking the current environment.
 

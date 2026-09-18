@@ -113,11 +113,11 @@ Presenter comment:
 
 ## Optional: a changing price without changing the conversation
 
-Use the separately documented [MySQL → RDI procedure](RDI.md#install-and-operate) with a prepared operator. That procedure changes `VT-001`, a family offer, so use it before the couples pivot or quote that package explicitly as a separate example.
+Use the separately documented [SQL Server → RDI procedure](RDI.md#install-and-operate) with a prepared operator. That procedure changes `VT-001`, a family offer, so use it before the couples pivot or quote that package explicitly as a separate example.
 
-Ask for the current `VT-001` offer, have the operator update its price in MySQL and verify propagation, then ask for that offer again. The second quote should read the new Context Retriever value. The old chat card is a historical result and does not automatically update in place.
+Ask for the current `VT-001` offer, have the operator update its price in SQL Server and verify propagation, then ask for that offer again. The second quote should read the new Context Retriever value. The old chat card is a historical result and does not automatically update in place.
 
-The deployment record in [RDI.md](RDI.md#current-state) documents a verified MySQL price change to $5,790 and restoration to $5,890, seen in Redis and Context Retriever. Rehearse the current environment before claiming a live result. Restore the starting price after the example; never substitute a direct Redis write for the MySQL/RDI path.
+[RDI.md](RDI.md#install-and-operate) provides the source-only price-change and restoration commands. Rehearse the current environment before claiming a live result. Restore the starting price after the example; never substitute a direct Redis write for the SQL Server/RDI path.
 
 ## Optional: reuse a safe policy answer
 

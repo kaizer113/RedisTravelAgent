@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inspect/change a MySQL offer and optionally verify genuine CDC in Redis.
+"""Inspect/change a SQL Server offer and optionally verify genuine CDC in Redis.
 
 This tool never writes Redis. A changed source value requires working CDC to match.
 Run from the repository: .venv/bin/python scripts/rdi_offer.py VT-001 --price 5790 --verify
@@ -29,13 +29,13 @@ if args.price is not None and (
 if args.price is not None and args.price != args.price.quantize(Decimal(".01")):
     parser.error("price must have at most two decimal places")
 
-sql = ""
+sql = "SET NOCOUNT ON; "
 if args.price is not None:
-    sql += f"UPDATE offers SET total_price={args.price}, eligible_reward_base=ROUND({args.price}*0.8,2) WHERE package_id='{args.package_id}'; "
-sql += f"SELECT JSON_OBJECT('package_id', package_id, 'total_price', total_price, 'available_rooms', available_rooms, 'updated_at', updated_at) FROM offers WHERE package_id='{args.package_id}';"
+    sql += f"UPDATE dbo.offers SET total_price={args.price}, eligible_reward_base=ROUND({args.price}*0.8,2), updated_at=SYSUTCDATETIME() WHERE package_id='{args.package_id}'; "
+sql += f"SELECT package_id, total_price, available_rooms, room_capacity, updated_at FROM dbo.offers WHERE package_id='{args.package_id}' FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;"
 remote = (
-    "sudo docker exec -i value-travel-mysql sh -c "
-    + "'MYSQL_PWD=\"$MYSQL_ROOT_PASSWORD\" mysql -uroot --batch --skip-column-names value_travel'"
+    "sudo docker exec -i value-travel-sqlserver sh -c "
+    + "'SQLCMDPASSWORD=\"$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -y 0 -w 65535 -d value_travel'"
 )
 started = time.monotonic()
 result = subprocess.run(
@@ -57,9 +57,9 @@ result = subprocess.run(
     check=True,
 )
 if not result.stdout.strip():
-    raise SystemExit("Offer not found in MySQL")
+    raise SystemExit("Offer not found in SQL Server")
 source = json.loads(result.stdout.strip())
-print(json.dumps({"source": "MySQL", "offer": source}))
+print(json.dumps({"source": "SQL Server", "offer": source}))
 if args.verify:
     from dotenv import load_dotenv
     import redis
@@ -85,7 +85,7 @@ if args.verify:
                         "redis_key": key,
                         "price": actual,
                         "elapsed_seconds": round(time.monotonic() - started, 3),
-                        "note": "Redis matches MySQL. For CDC proof, change to a price different from the prior Redis value.",
+                        "note": "Redis matches SQL Server. For CDC proof, change to a price different from the prior Redis value.",
                     }
                 )
             )
@@ -93,5 +93,5 @@ if args.verify:
         time.sleep(0.25)
     else:
         raise SystemExit(
-            "CDC NOT VERIFIED: Redis did not match MySQL before timeout. No Redis writes were performed."
+            "CDC NOT VERIFIED: Redis did not match SQL Server before timeout. No Redis writes were performed."
         )

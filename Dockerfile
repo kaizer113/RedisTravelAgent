@@ -2,7 +2,7 @@
 FROM us-east4-docker.pkg.dev/central-beach-194106/valuewholesale/valuewholesale-shopping-agent:latest
 USER root
 WORKDIR /app
-RUN uv pip install --python /app/.venv/bin/python --no-cache google-genai==2.24.0 redis-agent-memory==0.2.0 redisvl==0.23.0 'pymysql[rsa]>=1.1,<2'
+RUN uv pip install --python /app/.venv/bin/python --no-cache google-genai==2.24.0 redis-agent-memory==0.2.0 redisvl==0.23.0 'pymssql>=2.3,<3'
 COPY valuetravel /app/valuetravel
 COPY scripts /app/scripts
 ENV PYTHONUNBUFFERED=1

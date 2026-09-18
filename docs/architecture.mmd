@@ -2,9 +2,9 @@
 flowchart TB
   ui["VALUE TRAVEL browser<br/>Prompt buttons · package cards · shortlist<br/>Redis services dashboard · live trace"]
     app["valuewholesale-demo · 10.42.0.3:8080<br/>FastAPI + Gemini function-calling loop<br/>RedisVL search · router · embedding cache"]
-    mysql[("MySQL · 10.42.0.3:3307<br/>18 fictional offers<br/>Prices · rooms · terms")]
+    sqlserver[("SQL Server Developer<br/>10.42.0.3:1433 · 3 GiB cap<br/>18 offers · native CDC")]
     rdi["lg-rdi · 10.42.0.4<br/>Ubuntu 24.04 · RDI 2.0.0<br/>Debezium CDC + classic processor"]
-    mysql -->|Private binlog stream| rdi
+    sqlserver -->|Private CDC stream| rdi
   gemini["Vertex AI · Gemini<br/>Tool selection + generation"]
     lc["LangCache<br/>Approved generic policies<br/>Hit skips generation"]
     ram["Redis Agent Memory<br/>Session events + preferences<br/>Scoped by traveler"]
@@ -13,7 +13,7 @@ flowchart TB
     state[("RDI state database<br/>Separate from target<br/>noeviction · AOF")]
     ctx -->|Read governed entities| db
   ui -->|HTTP + streamed NDJSON| app
-  app -->|Presenter-key-protected Studio CRUD| mysql
+  app -->|Presenter-key-protected Studio CRUD| sqlserver
   app <-->|Model calls + tool requests| gemini
   app <-->|Safe policy cache| lc
   app <-->|Recall + explicit writes| ram
@@ -29,5 +29,5 @@ flowchart TB
   class ui client
   class app application
   class lc,ram,ctx,db,state,rdi redis
-  class mysql source
+  class sqlserver source
   class gemini google

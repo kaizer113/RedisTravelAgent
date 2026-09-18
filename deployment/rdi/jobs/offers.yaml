@@ -1,7 +1,8 @@
 name: value_travel_offers
 source:
-  server_name: mysql
+  server_name: sqlserver
   db: value_travel
+  schema: dbo
   table: offers
 transform:
   - uses: add_field

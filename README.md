@@ -10,7 +10,7 @@ A fictional travel concierge adapted from [Value Wholesale](https://github.com/k
 - Context Retriever surface `ValueTravelLio` with 20 read-only tools over Traveler, Offer and Reservation entities.
 - Persistent member shortlists and trip notes in Redis.
 - Gemini on Vertex AI with a bounded function-calling loop. No Vertex AI Sessions or Memory Bank.
-- MySQL source with 18 offers streamed through RDI 2.0.0 on `lg-rdi` into Redis JSON and Context Retriever. Live price-change propagation verified; see [RDI setup](docs/RDI.md).
+- SQL Server Developer source (3 GiB container limit) with 18 offers streamed through RDI 2.0.0 on `lg-rdi` into Redis JSON and Context Retriever. See [RDI setup](docs/RDI.md).
 
 ## Demo
 
@@ -24,7 +24,7 @@ All travelers, offers, prices, benefits and reservations are fictional. Package 
 
 ## Data Studio
 
-Open [Data Studio](http://34.21.122.27:8080/studio) for presenter-key-protected inline MySQL edits, inserts, deletes, Redis comparisons and Context Retriever verification. Writes go only to MySQL. See [presenter instructions](docs/data-studio.md).
+Open [Data Studio](http://34.21.122.27:8080/studio) for presenter-key-protected inline SQL Server edits, inserts, deletes, Redis comparisons and Context Retriever verification. Writes go only to SQL Server. See [presenter instructions](docs/data-studio.md).
 
 ## Development
 
@@ -38,10 +38,10 @@ uv run uvicorn valuetravel.api:app --port 8080
 uv run pytest -q
 ```
 
-Context setup writes credentials into `.env.context`; merge its scoped key and surface ID into runtime `.env`. Context setup imports only travelers and reservations. MySQL/RDI populates offers and their calculated fields; it never overwrites those records from application fixtures.
+Context setup writes credentials into `.env.context`; merge its scoped key and surface ID into runtime `.env`. Context setup imports only travelers and reservations. SQL Server/RDI populates offers and their calculated fields; it never overwrites those records from application fixtures.
 
 ## Deployment
 
-The VM container reuses Value Wholesale's existing CPU embedding runtime. Copy source to `/opt/value-travel`, preserve its mode-600 `.env`, and run `scripts/deploy.sh`. Only `value-travel-agent` on port 8080 is replaced. Value Wholesale remains on port 80. MySQL has its own container, volume and network.
+The VM container reuses Value Wholesale's existing CPU embedding runtime. Copy source to `/opt/value-travel`, preserve its mode-600 `.env`, and run `scripts/deploy.sh`. Only `value-travel-agent` on port 8080 is replaced. Value Wholesale remains on port 80. SQL Server has its own container, volume and network.
 
 Credentials are excluded from Git and Docker contexts. The Context admin key is not deployed to the application. Cache reset rotates only this application's scope; member reset targets only the selected owner and VALUE TRAVEL namespace.

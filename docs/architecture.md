@@ -4,8 +4,8 @@
 
 [Editable Mermaid source](architecture.mmd) · [Demo flow](demo.md) · [RDI operations](RDI.md)
 
-This describes the deployed demo as verified September 17, 2026. All business data
-is synthetic. Redis services and the MySQL CDC pipeline are real integrations.
+This describes the VALUE TRAVEL demo deployment. All business data
+is synthetic. Redis services and the SQL Server CDC pipeline are real integrations.
 
 ## Request path
 
@@ -45,16 +45,16 @@ Traveler, Offer and Reservation entities; they do not perform booking or payment
 ## Presenter Data Studio
 
 The separate `/studio` page uses presenter-key-protected APIs to edit, insert and delete
-MySQL offers with a table-scoped editor account. It compares the source with independent
+SQL Server offers with a table-scoped editor account. It compares the source with independent
 read-only Redis snapshots and offers an explicit Context Retriever lookup. Restore writes
-the 18 baseline records back to MySQL. No Studio operation writes Redis. New arbitrary
+the 18 baseline records back to SQL Server. No Studio operation writes Redis. New arbitrary
 offers are not automatically added to the separately seeded vector catalog.
 
 ## Data ownership
 
 | Data | Owner and storage | Behavior |
 | --- | --- | --- |
-| Offer price, rooms and current terms | MySQL `value_travel.offers` → RDI → Redis Offer JSON | CDC maintains the current operational record |
+| Offer price, rooms and current terms | SQL Server `value_travel.dbo.offers` → RDI → Redis Offer JSON | CDC maintains the current operational record |
 | Package descriptions, flight flags, party size, Shop Cards | Synthetic fixtures / RedisVL catalog | Static seeded discovery data; not all catalog fields use CDC |
 | Traveler and reservation records | Seeded Redis JSON, exposed through Context Retriever | Synthetic operational context; reservation is not a real booking |
 | Session events | Redis Agent Memory | Selected member and session scope |
@@ -70,22 +70,24 @@ the backend. The Context Retriever admin key is not deployed to the application.
 
 ## Continuous data path
 
-`valuewholesale-demo` (`10.42.0.3`) hosts MySQL at private port 3307. Its binlogs use
-ROW/FULL images with GTIDs enabled. The separate Ubuntu VM `lg-rdi` (`10.42.0.4`)
+`valuewholesale-demo` (`10.42.0.3`) hosts SQL Server Developer at private port 1433.
+Docker limits the container to 3 GiB with no additional swap allowance; SQL Server
+uses a 2048 MB memory limit. SQL Server Agent runs the native CDC capture jobs for
+`value_travel.dbo.offers`. The separate Ubuntu VM `lg-rdi` (`10.42.0.4`)
 runs RDI 2.0.0, a Debezium collector and the classic processor on K3s. Both VMs are
 on `lg-peering-demo-vpc` / `lg-peering-demo-us-east4`.
 
 RDI maps ten source fields and calculates `average_price_per_person` as the package
 price divided by room capacity, rounded to cents. It replaces the offer documents in `value-travel:context:offer:VT-001` through
-`VT-018` with JSON derived from MySQL. Context Retriever reads those documents. RDI's state
+`VT-018` with JSON derived from SQL Server. Context Retriever reads those documents. RDI's state
 database is separate from the target. Pod/service CIDRs avoid the VPC's 10.42 range.
-MySQL ingress is restricted to the RDI VM; the RDI HTTPS API is accessed locally
+SQL Server ingress is restricted to the RDI VM; the RDI HTTPS API is accessed locally
 through SSH. See [RDI.md](RDI.md) for deployment and verification commands.
 
-The verified proof changed VT-001 in MySQL from $5,890 to $5,790, observed the new
-value in Redis and Context Retriever, then restored $5,890 through the same path.
-RDI reported 18 inserts and two updates with no rejected records. This is correctness
-evidence for that test, not a production availability or latency guarantee.
+Demonstrate the continuous path by changing VT-001 in SQL Server, observing the new
+value in Redis and Context Retriever, then restoring the starting value through the
+same source path. Also insert and delete a temporary offer. Compare actual records;
+Studio polling is an observation interval, not an RDI latency guarantee.
 
 ## What the trace proves
 

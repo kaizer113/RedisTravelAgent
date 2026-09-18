@@ -1,22 +1,25 @@
-# MySQL on the shared demo VM; only lg-rdi may connect through the VPC firewall.
+# SQL Server on the shared demo VM; only lg-rdi may connect through the VPC firewall.
 # Validated and deployed with RDI 2.0.0.
 sources:
-  mysql:
+  sqlserver:
     type: cdc
     connection:
-      type: mysql
+      type: sqlserver
       host: 10.42.0.3
-      port: 3307
-      user: ${MYSQL_DB_USERNAME}
-      password: ${MYSQL_DB_PASSWORD}
-    databases:
-      - value_travel
+      port: 1433
+      database: value_travel
+      user: ${SQLSERVER_DB_USERNAME}
+      password: ${SQLSERVER_DB_PASSWORD}
+    schemas:
+      - dbo
     tables:
-      value_travel.offers: {}
+      dbo.offers: {}
     advanced:
       source:
         decimal.handling.mode: double
-        database.allowPublicKeyRetrieval: true
+        database.encrypt: true
+        database.trustServerCertificate: true
+        poll.interval.ms: 500
 targets:
   target:
     connection:

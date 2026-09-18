@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-import pymysql
+import pymssql
 import pytest
 
 from valuetravel import studio
@@ -16,7 +16,7 @@ from valuetravel import studio
 @pytest.fixture
 def harness(monkeypatch):
     settings = SimpleNamespace(
-        studio_key="presenter-test-key", studio_mysql_password="local-test-password"
+        studio_key="presenter-test-key", studio_sqlserver_password="local-test-password"
     )
     store = MagicMock(spec=studio.OfferStore)
     store.list.return_value = []
@@ -60,7 +60,7 @@ def test_presenter_key_required_before_data_access(harness, headers):
     assert not harness.redis.mock_calls
 
 
-@pytest.mark.parametrize("setting", ["studio_key", "studio_mysql_password"])
+@pytest.mark.parametrize("setting", ["studio_key", "studio_sqlserver_password"])
 def test_studio_disabled_without_required_configuration(harness, setting):
     setattr(harness.settings, setting, "")
     response = harness.client.get("/api/studio/offers", headers=harness.headers)
@@ -87,7 +87,7 @@ def test_studio_disabled_without_required_configuration(harness, setting):
         ("departure_date", "not-a-date"),
     ],
 )
-def test_invalid_offer_never_reaches_mysql(harness, offer, field, value):
+def test_invalid_offer_never_reaches_sqlserver(harness, offer, field, value):
     offer[field] = value
     response = harness.client.post(
         "/api/studio/offers", headers=harness.headers, json=offer
@@ -129,7 +129,7 @@ def test_optimistic_conflict_is_not_reported_as_success(harness, offer):
     harness.context.call.assert_not_awaited()
 
 
-def test_successful_insert_only_mutates_mysql(harness, offer):
+def test_successful_insert_only_mutates_sqlserver(harness, offer):
     response = harness.client.post(
         "/api/studio/offers", headers=harness.headers, json=offer
     )
@@ -159,8 +159,8 @@ def test_restore_requires_exact_confirmation(harness):
     assert not harness.redis.mock_calls
 
 
-def test_mysql_connection_error_does_not_confirm_a_change(harness, offer):
-    harness.store.mutate.side_effect = pymysql.OperationalError(2006, "connection lost")
+def test_sqlserver_connection_error_does_not_confirm_a_change(harness, offer):
+    harness.store.mutate.side_effect = pymssql.OperationalError(20002, "connection lost")
     response = harness.client.post(
         "/api/studio/offers", headers=harness.headers, json=offer
     )
@@ -223,12 +223,14 @@ def test_store_conflicting_version_locks_row_and_never_commits(monkeypatch):
         )
     assert exc.value.status_code == 409
     cursor.execute.assert_called_once_with(
-        "SELECT updated_at FROM offers WHERE package_id=%s FOR UPDATE", ("VT-001",)
+        "SELECT updated_at FROM dbo.offers WITH (UPDLOCK, HOLDLOCK) WHERE package_id=%s",
+        ("VT-001",)
     )
     conn.commit.assert_not_called()
+    conn.rollback.assert_called_once()
 
 
-def test_rdi_calculated_field_cannot_be_written_to_mysql(harness, offer):
+def test_rdi_calculated_field_cannot_be_written_to_sqlserver(harness, offer):
     offer["average_price_per_person"] = 1472.5
     response = harness.client.post(
         "/api/studio/offers", headers=harness.headers, json=offer

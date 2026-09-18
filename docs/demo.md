@@ -13,7 +13,7 @@ show the evidence. These are fictional offers and benefits, not real supplier pr
 3. Under **Presenter controls**, use **Reset demo cache** if you want to show a
    first miss. It rotates this application's LangCache scope, not the shared cache.
 4. If needed, use **Reset member memory** to restore Alex's seeded preferences.
-   This is a memory reset, not a MySQL-price or shortlist reset. Remove unwanted
+   This is a memory reset, not a SQL Server-price or shortlist reset. Remove unwanted
    shortlist entries with their **Remove** controls.
 5. For the optional RDI segment, have a terminal in this repository ready. Confirm
    VT-001 is at its baseline $5,890 and that RDI is streaming; see [RDI.md](RDI.md).
@@ -25,7 +25,7 @@ breakfast and a pool. Dates in the dataset begin **April 10, 2027**. All prices 
 for the displayed party, airport and dates; changing these does not generate a new quote.
 
 Responses and tool ordering vary with the model. Package values below are baseline
-fixtures; MySQL changes can legitimately alter current prices. The deployed RDI
+fixtures; SQL Server changes can legitimately alter current prices. The deployed RDI
 price-change sequence was verified; these instructions do not promise identical prose.
 
 ## 1. Find a family escape with clear trade-offs
@@ -67,7 +67,7 @@ Expected behavior: the shortlist appears in the trip workspace. Comparison uses
 fresh offer reads. Saving is a Redis workspace mutation, not a reservation,
 payment or inventory hold. The baseline payable difference is $600.
 
-## 3. Prove the price is sourced from MySQL
+## 3. Prove the price is sourced from SQL Server
 
 Optional live-data segment, approximately two minutes. The visual option is [Data Studio](data-studio.md): unlock it, edit VT-001’s price to 5790, save, and watch its Redis copy update. Use the Context Retriever check, then restore the original price. The same sequence is also available in a terminal at this repository:
 
@@ -75,7 +75,7 @@ Optional live-data segment, approximately two minutes. The visual option is [Dat
 .venv/bin/python scripts/rdi_offer.py VT-001 --price 5790 --verify
 ```
 
-Wait for the script to report a Redis match. It writes only MySQL and observes Redis;
+Wait for the script to report a Redis match. It writes only SQL Server and observes Redis;
 it does not copy the new price into Redis itself. Ask:
 
 > Refresh the current quote for VT-001 and compare it with VT-002.
@@ -113,7 +113,7 @@ preference. Expand the memory trace to inspect actual returned facts. **New visi
 starts a new session; it does not clear the traveler workspace or long-term memory.
 
 Explain the three roles: session events preserve conversation, long-term memory stores
-preferences, and the Redis workspace stores explicit shortlist/notes. MySQL owns
+preferences, and the Redis workspace stores explicit shortlist/notes. SQL Server owns
 current price and room counts. This demo has no Vertex AI Sessions or Memory Bank.
 
 If a new preference is not returned immediately, inspect the trace and retry once;

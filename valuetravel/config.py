@@ -16,10 +16,10 @@ class Settings(BaseSettings):
     agent_memory_namespace: str = "value-travel"
     embedding_model: str = "redis/langcache-embed-v3-small"
     studio_key: str = ""
-    studio_mysql_host: str = "value-travel-mysql"
-    studio_mysql_port: int = 3306
-    studio_mysql_user: str = "value_travel_editor"
-    studio_mysql_password: str = ""
+    studio_sqlserver_host: str = "value-travel-sqlserver"
+    studio_sqlserver_port: int = 1433
+    studio_sqlserver_user: str = "value_travel_editor"
+    studio_sqlserver_password: str = ""
 
     @property
     def memory_configured(self):

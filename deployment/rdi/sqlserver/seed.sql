@@ -1,0 +1,39 @@
+-- Fictional offers. Insert missing rows without replacing edited values.
+USE value_travel;
+SET NOCOUNT ON;
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-001')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-001', N'Kaanapali Family Escape', N'Maui', 5890, 4, 4, 4712.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-002')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-002', N'Wailea Ocean Retreat', N'Maui', 6490, 5, 4, 5192.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-003')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-003', N'Kihei Beachside Value', N'Maui', 4790, 6, 4, 3832.0, N'Hotel becomes nonrefundable 14 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-004')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-004', N'Waikiki Discovery', N'Oahu', 4390, 7, 4, 3512.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-005')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-005', N'Ko Olina Lagoon Stay', N'Oahu', 6290, 8, 4, 5032.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-006')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-006', N'Kona Coast Adventure', N'Hawaii', 5790, 9, 4, 4632.0, N'Hotel becomes nonrefundable 14 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-007')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-007', N'Riviera Maya All-Inclusive', N'Cancun', 5290, 3, 4, 4232.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-008')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-008', N'Los Cabos Family Sun', N'Los Cabos', 4890, 4, 4, 3912.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-009')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-009', N'Pacific Couples Hideaway', N'Los Cabos', 3790, 5, 2, 3032.0, N'Hotel becomes nonrefundable 14 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-010')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-010', N'Riviera Serenity', N'Cancun', 4290, 6, 2, 3432.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-011')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-011', N'Wailea Couples Escape', N'Maui', 4590, 7, 2, 3672.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-012')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-012', N'Kapalua Quiet Coast', N'Maui', 3990, 8, 2, 3192.0, N'Hotel becomes nonrefundable 14 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-013')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-013', N'Aruba Beach Retreat', N'Aruba', 4690, 9, 2, 3752.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-014')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-014', N'Lisbon Neighborhoods', N'Lisbon', 3690, 3, 2, 2952.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-015')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-015', N'Rome and Florence', N'Italy', 4890, 4, 2, 3912.0, N'Hotel becomes nonrefundable 14 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-016')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-016', N'Barcelona City and Sea', N'Barcelona', 4090, 5, 2, 3272.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-017')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-017', N'Paris Walkable Weekend', N'Paris', 3890, 6, 2, 3112.0, N'Refundable hotel until 30 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
+IF NOT EXISTS (SELECT 1 FROM dbo.offers WHERE package_id=N'VT-018')
+INSERT INTO dbo.offers (package_id, name, destination, total_price, available_rooms, room_capacity, eligible_reward_base, cancellation, departure_date, data_label) VALUES (N'VT-018', N'San Juan Old Town', N'Puerto Rico', 3290, 7, 2, 2632.0, N'Hotel becomes nonrefundable 14 days before departure; flight fare rules apply.', N'2027-04-10', N'Synthetic demo offer');
