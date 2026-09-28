@@ -33,23 +33,14 @@ sql = "SET NOCOUNT ON; "
 if args.price is not None:
     sql += f"UPDATE dbo.offers SET total_price={args.price}, eligible_reward_base=ROUND({args.price}*0.8,2), updated_at=SYSUTCDATETIME() WHERE package_id='{args.package_id}'; "
 sql += f"SELECT package_id, total_price, available_rooms, room_capacity, updated_at FROM dbo.offers WHERE package_id='{args.package_id}' FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;"
-remote = (
-    "sudo docker exec -i value-travel-sqlserver sh -c "
-    + "'SQLCMDPASSWORD=\"$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -y 0 -w 65535 -d value_travel'"
-)
 started = time.monotonic()
 result = subprocess.run(
     [
-        "gcloud",
-        "compute",
-        "ssh",
-        "valuewholesale-demo",
-        "--project",
-        "central-beach-194106",
-        "--zone",
-        "us-east4-c",
-        "--command",
-        remote,
+        "kubectl",
+        "--context", os.environ.get("GKE_CONTEXT", "gke_central-beach-194106_us-east4_lionel-iris-peered"),
+        "--namespace", "demo-access",
+        "exec", "-i", "deployment/sqlserver", "--", "sh", "-c",
+        'SQLCMDPASSWORD="$MSSQL_SA_PASSWORD" exec /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -y 0 -w 65535 -d value_travel',
     ],
     input=sql,
     text=True,

@@ -105,6 +105,7 @@ class OfferStore:
             login_timeout=5,
             timeout=10,
             tds_version="7.4",
+            encryption="require",
             autocommit=False,
         )
 

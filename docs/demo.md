@@ -6,7 +6,7 @@ show the evidence. These are fictional offers and benefits, not real supplier pr
 
 ## Before the session
 
-1. Open [VALUE TRAVEL](http://34.21.122.27:8080/). Select **Alex Rivera** and
+1. Open [VALUE TRAVEL](http://34.48.172.111:8080/). Select **Alex Rivera** and
    **Gemini 3.6 Flash**. Wait for the greeting.
 2. Ensure **Context Retriever** is checked in the Redis services dashboard.
    Search and comparison require it to verify current offers.
@@ -94,7 +94,7 @@ Restore the fixture immediately:
 ```
 
 Refresh the quote again. VT-001 must return to $5,890. RDI runs independently of chat
-on `lg-rdi`; its CDC activity is not a dedicated row in the application dashboard.
+in the GKE cluster `lionel-iris-peered` (namespace `rdi`); its CDC activity is not a dedicated row in the application dashboard.
 The earlier deployment verification processed 18 initial rows plus both test updates
 with zero rejections. That is a test observation, not a throughput benchmark.
 

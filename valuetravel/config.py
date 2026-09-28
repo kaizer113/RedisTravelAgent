@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     agent_memory_api_key: str
     agent_memory_namespace: str = "value-travel"
     embedding_model: str = "redis/langcache-embed-v3-small"
-    studio_sqlserver_host: str = "value-travel-sqlserver"
+    studio_sqlserver_host: str = "10.42.0.9"
     studio_sqlserver_port: int = 1433
     studio_sqlserver_user: str = "value_travel_editor"
     studio_sqlserver_password: str = ""

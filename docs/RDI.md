@@ -10,101 +10,139 @@ means people accommodated by the offer; it is independent of available room coun
 
 ## Current state
 
-SQL Server Developer runs on the shared VM in the `value-travel-sqlserver`
-container, with its own persistent volume on the `value-travel-data` Docker network.
-Port 1433 binds only the private address `10.42.0.3`; the GCP firewall allows
-connections from the `lg-rdi` collector VM. The application connects over Docker's
-private network.
+SQL Server Developer and RDI 2.0.0 run on the existing regional GKE cluster
+`lionel-iris-peered`. The shared VM `valuewholesale-demo` continues to run the
+concierge on port 8080 and the other demos, including the original port-80 demo.
+SQL Server is no longer hosted in a container on that VM, and the dedicated
+`lg-rdi` VM is retired after migration verification.
 
-Docker enforces a 3 GiB memory ceiling with `--memory=3g --memory-swap=3g` (no
-additional swap allowance). `MSSQL_MEMORY_LIMIT_MB=2048` leaves headroom within that
-ceiling. SQL Server Agent is enabled, and native Change Data Capture is enabled on
-both database `value_travel` and table `dbo.offers`. The collector reads SQL Server
-CDC changes using a dedicated account. Developer edition is used for this demo.
-
-Generated source credentials remain in ignored `.env.sqlserver` and private VM files
-(mode 600). The container, network and volume carry `owner=lionel_giavelli` and
-`skip_deletion=yes` labels. The separate RDI 2.0.0 installation on `lg-rdi` remains
-in place; its collector configuration now selects the SQL Server source.
+SQL Server has one replica, a hard container limit of 3,000,000,000 bytes (3 GB),
+and `MSSQL_MEMORY_LIMIT_MB=2048`. Its 20 GiB persistent disk has a Retain reclaim
+policy. SQL Server Agent is enabled, with native Change Data Capture on database
+`value_travel` and table `dbo.offers`. RDI uses a dedicated CDC account; Studio
+uses a separate table-scoped editor account.
 
 | Resource | Configuration |
 | --- | --- |
-| Project / zone | `central-beach-194106` / `us-east4-c` |
-| RDI VM | `lg-rdi`, Ubuntu 24.04, e2-standard-4, 80 GB disk |
-| RDI private IP | `10.42.0.4` |
-| VPC / subnet | `lg-peering-demo-vpc` / `lg-peering-demo-us-east4` |
-| SQL Server source | `10.42.0.3:1433`, database `value_travel`, schema `dbo`, table `offers` |
-| State database | `juice-workable-receipt-96400.db.redis.io:11784` |
-| State settings verified | noeviction, AOF enabled, cluster disabled |
-| Pipeline / processor | `default` / `classic` |
-| Job | `value_travel_offers` |
-| K3s pod / service CIDRs | `10.244.0.0/16` / `10.245.0.0/16` |
-| K3s cluster DNS | `10.245.0.10`, upstream `169.254.169.254` |
+| Project / region | `central-beach-194106` / `us-east4` |
+| GKE cluster | `lionel-iris-peered` |
+| Kubernetes context | `gke_central-beach-194106_us-east4_lionel-iris-peered` |
+| RDI namespace / API service | `rdi` / `rdi-api:8080` |
+| SQL namespace / deployment | `demo-access` / `sqlserver` |
+| SQL source for RDI | `sqlserver.demo-access.svc.cluster.local:1433` |
+| SQL source for application | private gateway `10.42.0.9:1433` |
+| Source database / schema / table | `value_travel` / `dbo` / `offers` |
+| RDI API for administrator | `https://35.245.24.240` |
+| SQL endpoint for administrator | `35.245.24.240:1433` |
+| State database | `men-outstanding-mercurial-20861.db.redis.io:17168` |
+| Application Redis target | `cantabile-consummate-micropolished-92484.db.redis.io:17518` |
+| Pipeline / processor / job | `default` / `classic` / `value_travel_offers` |
+| SQL persistent volume claim | `demo-access/sqlserver-data`, 20 GiB, Retain |
 
-The RDI VM and disk have `owner=lionel_giavelli,skip_deletion=yes` labels.
-SSH is restricted to the existing administrator IP. RDI's HTTPS API is used
-locally over SSH; no public API firewall rule was added. SQL Server ingress is limited
-to the RDI private IP. Credentials remain in mode-600 files and RDI secrets.
+The private gateway permits source `10.42.0.3/32`; the public gateway permits the
+configured administrator IP. Kubernetes network policy allows RDI-to-SQL traffic.
+SQL requires TLS; the demo certificate covers both gateway IPs and the internal
+SQL service DNS name. CA material and credentials come from the separate Iris
+workspace's `CONNECTIONS.md` and private connection bundle. Credentials are never
+committed. Supported resources carry `owner=lionel_giavelli,skip_deletion=yes`.
 
-The shared demo VM disk was independently expanded from 30 to 80 GB online.
-Its Debian 12 OS is not supported by the RDI installer, so RDI runs separately.
-The original port-80 demo and VALUE TRAVEL on port 8080 remain available.
+This migration changes only the SQL/RDI hosting. The application Redis target,
+managed Agent Memory, LangCache, and Context Retriever services retain their
+existing endpoints and data. The GKE RDI state database is separate from the
+application Redis target; do not repoint offers at the state database.
 
 ## Files
 
 - `deployment/rdi/sqlserver/init.sql`: database, offer schema and native CDC setup.
 - `deployment/rdi/sqlserver/seed.sql`: 18 fictional baseline offers.
-- `scripts/rdi_start_sqlserver.sh`: Docker deployment, schema setup and separate CDC/editor accounts.
+- `scripts/rdi_init_sqlserver.sh`: initialize the existing GKE SQL deployment and separate CDC/editor accounts.
 - `scripts/rdi_generate_sqlserver_seed.py`: regenerate `seed.sql` from `valuetravel/data.py`.
 - `deployment/rdi/config.yaml`: deployed collector/target configuration.
 - `deployment/rdi/jobs/offers.yaml`: exact JSON Offer mapping for Context Retriever.
+- `scripts/rdi_deploy.py`: configure scoped secrets, validate and deploy through the GKE RDI API.
 - `scripts/rdi_offer.py`: update only SQL Server and optionally observe Redis propagation.
 
 The seed inserts missing baseline offers without overwriting existing source edits.
-Removing the Docker volume destroys the source data.
+Retain the SQL persistent volume when recreating a pod; do not delete its underlying disk.
 
 ## Install and operate
 
-Create a private `.env.sqlserver` at the repository root with `MSSQL_SA_PASSWORD`,
-`SQLSERVER_CDC_PASSWORD` and `SQLSERVER_EDITOR_PASSWORD`. The startup script accepts
-16–128 characters using letters, digits, underscores and hyphens. It provisions
-`value_travel_cdc` and the table-scoped `value_travel_editor` separately.
+The existing cluster and its SQL persistent volume are managed from the Iris
+workspace. Do not reinstall RDI on a VM or recreate the SQL persistent volume.
+Connect to the cluster before running the Kubernetes operations:
 
 ```sh
-bash scripts/rdi_start_sqlserver.sh
+export PATH="$PATH:/opt/homebrew/share/google-cloud-sdk/bin"
+gcloud container clusters get-credentials lionel-iris-peered --region us-east4 --project central-beach-194106
+kubectl -n demo-access get deployment sqlserver
+kubectl -n rdi get deployments,pods
 ```
 
-The script reads `.env.sqlserver` (override with `SQLSERVER_ENV_FILE`), starts the
-limited-memory container, enables CDC, then inserts any missing baseline rows.
-Use `--no-seed` when loading an existing source dataset during migration. The Studio
-uses its separate `STUDIO_SQLSERVER_*` configuration and never uses `sa`.
-
-
-The installer is extracted at `~/rdi-installer/rdi_install/2.0.0` on `lg-rdi`.
-The active pipeline files are at `~/value-travel-pipeline`.
-`deployment/rdi/install/installer.example.toml` documents the installation input.
-RDI 2.0.0 actually reads TOML for silent installation, although its help says YAML.
-Keep the completed installer file private and run from the extracted directory:
+Initialize the existing SQL deployment using a private `.env.sqlserver` containing
+`SQLSERVER_CDC_PASSWORD` and `SQLSERVER_EDITOR_PASSWORD`:
 
 ```sh
-sudo INSTALL_K3S_EXEC='--cluster-cidr=10.244.0.0/16 --service-cidr=10.245.0.0/16 --cluster-dns=10.245.0.10' ./install.sh -f ~/.rdi-install.toml
+bash scripts/rdi_init_sqlserver.sh --no-seed
 ```
 
-The CLI context is `default`, API URL `https://localhost`, user `default`.
-Supply the state database password through `RDI_PASSWORD` when using the CLI;
-never commit it. The self-signed local API uses the installer's insecure context.
-Source and target credentials are already configured with `redis-di set-secret`.
-When changing several secrets, use `--wait=false` for intermediate changes,
-then wait for the final change and collector API rollout before validation.
+Omit `--no-seed` only to insert missing baseline offers into a fresh demo.
+`GKE_CONTEXT` overrides the default context shown above. The script operates on
+the existing deployment rather than creating another SQL container or disk.
+The Studio uses its separate `STUDIO_SQLSERVER_*` configuration and never uses
+`sa`. The application image includes the public CA and FreeTDS configuration for
+encryption and hostname validation. Preserve current source rows when initializing
+the database; seed fixtures are not a replacement for live source edits.
+
+The RDI API requires CA-validated HTTPS and a bearer token. Use the connection
+bundle from the Iris workspace; `scripts/rdi-login.py` in that workspace refreshes
+the token. The live API exposes these operations:
+
+- `POST /api/v1/login`: username/password login, returning `access_token`.
+- `GET /api/v2/pipelines/default`: configuration and current status.
+- `PUT /api/v2/pipelines/default`: replace configuration using
+  `{ "active": true, "config": { ... } }`.
+- `POST /api/v2/pipelines/default/secrets?db=sqlserver`: create source secrets
+  using `key: "USERNAME"` or `key: "PASSWORD"`, `value`, and `type: "simple"`.
+  Use `db=target` for target secrets. Update with
+  `PUT /api/v2/pipelines/default/secrets/{key}?db=sqlserver` (or `db=target`).
+  The key is the short name, not `SQLSERVER_DB_USERNAME`; the API derives the
+  configuration placeholder from the database scope.
+- `GET /api/v2/pipelines/default/status`: deployment status.
+- `GET /api/v2/pipelines/default/dlqs`: rejected-record queues.
+
+The configuration combines `deployment/rdi/config.yaml` and the named job in
+`deployment/rdi/jobs/offers.yaml`. Set source and target credentials as RDI secrets;
+never embed them in committed YAML. SQL Server connection settings enable TLS.
+The existing collector settings trust the demo server certificate; do not confuse
+that with CA validation on the public RDI API connection.
+
+Deploy the checked-in configuration with:
 
 ```sh
-redis-di deploy --dir ~/value-travel-pipeline --dry-run
-redis-di deploy --dir ~/value-travel-pipeline
-redis-di describe
-redis-di list-dlqs
+.venv/bin/python scripts/rdi_deploy.py --connection-env /path/to/private/rdi-connection.env
 ```
 
-For a live demo, run from this repository:
+The private connection file must define `RDI_API_URL`, `RDI_USER`, `RDI_PASSWORD`,
+and `RDI_CA_CERT_FILE`. CA paths can be absolute or relative to that connection
+file; environment variables can override the file settings. The default secrets
+file is ignored `.env.rdi-pipeline.json` with this structure:
+
+```json
+{
+  "sqlserver": {"USERNAME": "value_travel_cdc", "PASSWORD": "<source password>"},
+  "target": {"USERNAME": "default", "PASSWORD": "<target password>"}
+}
+```
+
+The helper upserts those scoped secrets, validates, and deploys only after validation
+passes. Immediately after secret updates, the collector may briefly see unresolved
+placeholders until its Kubernetes reload completes. The helper retries that condition
+and temporary gateway failures for up to 120 seconds (`--secret-wait`), without
+printing service response bodies or credentials. Other validation failures stop
+immediately. A successful deployment is not replication proof; verify live source
+changes and target observations separately.
+
+For a live demo, run from this repository with Kubernetes access to the SQL deployment:
 
 ```sh
 .venv/bin/python scripts/rdi_offer.py VT-001 --price 5790 --verify
@@ -113,13 +151,12 @@ For a live demo, run from this repository:
 
 The first command changes only SQL Server and waits for Redis to match. Show the
 Context Retriever `get_offer_by_id` tool or refresh a package quote between
-commands. The second command restores the original price. Do not rerun the
+commands. The second command restores the baseline price. Record and restore the actual starting price instead when an offer has already been edited. Do not rerun the
 bootstrap Redis seeding script as part of this demonstration: current prices
 are maintained by SQL Server and RDI.
 
 ## Primary references
 
-- [RDI VM installation and state database requirements](https://redis.io/docs/latest/integrate/redis-data-integration/installation/install-vm/)
 - [SQL Server container configuration](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-docker-container-configure?view=sql-server-ver17)
 - [SQL Server memory configuration](https://learn.microsoft.com/en-us/sql/linux/configure/performance-best-practices-sql-server-memory?view=sql-server-ver17)
 - [Prepare SQL Server for RDI](https://redis.io/docs/latest/integrate/redis-data-integration/data-pipelines/prepare-dbs/sql-server/)
@@ -129,16 +166,24 @@ are maintained by SQL Server and RDI.
 
 ## Validation
 
-The SQL Server migration preserved all 18 current offers. Live validation verified
-insert → Redis, update → Redis, deletion from both stores, stale-update rejection,
-and Context Retriever retrieval. The calculated field changed from 33.33 for
-100 / 3 to 60 for 240 / 4. The temporary verification offer was deleted. RDI
-reported SQL Server streaming with no pending or rejected records.
+On September 28, 2026, all 18 current offers migrated to GKE with every source
+field and `updated_at` preserved. Live checks verified inserts, updates, and deletes
+through Studio → GKE SQL Server → GKE RDI → the existing Redis database. The
+calculated field matched 4321.20 / 4 = 1080.30 and 5678.40 / 4 = 1419.60;
+Context Retriever returned the updated offer and calculation. The temporary test
+record was deleted, leaving the original 18 offers. The Family escape prompt
+returned a complete answer after migration. All 58 automated tests passed.
+
+The dedicated `lg-rdi` VM and its boot disk were deleted after verification, along
+with its two dedicated firewall rules. The old SQL Server container was removed
+from the shared VM. Its stopped data volume remains as a rollback copy; the active
+source is the GKE persistent volume. A private JSON export of the original rows is
+stored locally in `.env.sqlserver-gke-migration-backup.json` (excluded from Git).
 
 The optional `--validate-cdc` preflight in the installed RDI 2.0.0 build demands
 database-wide UPDATE permission. This demo deliberately keeps the collector
 read-only, matching the source preparation guidance; use standard validation
-above and the live replication checks instead. The CDC account has
+and the live replication checks instead. The CDC account has
 `db_datareader`, CDC-schema read access, and state/performance-state permissions;
 only the separate Studio editor account can modify offers.
 

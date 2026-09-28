@@ -6,7 +6,7 @@ This is a presenter script grounded in the current implementation and synthetic 
 
 ## Prepare the story
 
-Open [VALUE TRAVEL](http://34.21.122.27:8080/). Select **Alex Rivera** under **Travel as** and keep that member selected. Use the configured default model. Leave **Context Retriever** enabled in the services dashboard.
+Open [VALUE TRAVEL](http://34.48.172.111:8080/). Select **Alex Rivera** under **Travel as** and keep that member selected. Use the configured default model. Leave **Context Retriever** enabled in the services dashboard.
 
 Alex is the fictional Executive member `travel-alex`, based at SFO, with two adults and two children in the household. Seeded preferences favor nonstop flights, breakfast, and a pool. These are demo facts, not customer data.
 

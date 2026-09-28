@@ -70,19 +70,26 @@ the backend. The Context Retriever admin key is not deployed to the application.
 
 ## Continuous data path
 
-`valuewholesale-demo` (`10.42.0.3`) hosts SQL Server Developer at private port 1433.
-Docker limits the container to 3 GiB with no additional swap allowance; SQL Server
-uses a 2048 MB memory limit. SQL Server Agent runs the native CDC capture jobs for
-`value_travel.dbo.offers`. The separate Ubuntu VM `lg-rdi` (`10.42.0.4`)
-runs RDI 2.0.0, a Debezium collector and the classic processor on K3s. Both VMs are
-on `lg-peering-demo-vpc` / `lg-peering-demo-us-east4`.
+`valuewholesale-demo` (`10.42.0.3`, public `34.48.172.111`) hosts the concierge
+and other demos. SQL Server Developer and RDI 2.0.0 run on the existing GKE cluster
+`lionel-iris-peered` in `us-east4`. SQL Server is in namespace `demo-access`, with
+one replica, a 3,000,000,000-byte container limit, a 2048 MB engine memory budget,
+and a retained 20 GiB persistent volume. SQL Server Agent runs native CDC capture
+jobs for `value_travel.dbo.offers`.
+
+The app reaches SQL Server over TLS through the private gateway `10.42.0.9:1433`,
+which permits the app VM's private source address. RDI's Debezium collector and
+classic processor run in namespace `rdi`; the source address is
+`sqlserver.demo-access.svc.cluster.local:1433`. Network policy permits this
+cross-namespace connection. The old dedicated RDI VM and shared-VM SQL container
+are no longer part of the runtime topology.
 
 RDI maps ten source fields and calculates `average_price_per_person` as the package
 price divided by room capacity, rounded to cents. It replaces the offer documents in `value-travel:context:offer:VT-001` through
 `VT-018` with JSON derived from SQL Server. Context Retriever reads those documents. RDI's state
-database is separate from the target. Pod/service CIDRs avoid the VPC's 10.42 range.
-SQL Server ingress is restricted to the RDI VM; the RDI HTTPS API is accessed locally
-through SSH. See [RDI.md](RDI.md) for deployment and verification commands.
+database remains separate from the application target. The existing managed Redis
+services keep their original endpoints. The RDI API uses the public gateway's
+CA-validated HTTPS endpoint, restricted to the configured administrator IP. See [RDI.md](RDI.md) for deployment and verification commands.
 
 Demonstrate the continuous path by changing VT-001 in SQL Server, observing the new
 value in Redis and Context Retriever, then restoring the starting value through the

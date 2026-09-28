@@ -1,11 +1,11 @@
-# SQL Server on the shared demo VM; only lg-rdi may connect through the VPC firewall.
+# SQL Server in the existing lionel-iris-peered GKE cluster.
 # Validated and deployed with RDI 2.0.0.
 sources:
   sqlserver:
     type: cdc
     connection:
       type: sqlserver
-      host: 10.42.0.3
+      host: sqlserver.demo-access.svc.cluster.local
       port: 1433
       database: value_travel
       user: ${SQLSERVER_DB_USERNAME}

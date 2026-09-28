@@ -33,7 +33,7 @@ Start with the customer experience. Reveal the trace after a package recommendat
 
 **LangCache** is used only for approved standalone policy questions that also pass the semantic route check. The allowlist is deliberately conservative. Price searches, comparisons, personal preferences, and reservation questions bypass it. Cache scopes include the application policy version, reset epoch, and model. **Reset demo cache** rotates the application's scope; old entries expire separately.
 
-**Redis Data Integration** streams the SQL Server `offers` table into Redis JSON for Context Retriever. SQL Server holds mutable price, availability, eligible-reward base, cancellation, and offer metadata. The static travel catalog and policy text are not all sourced from SQL Server. The deployed configuration and dated validation evidence are in [RDI.md](RDI.md).
+**Redis Data Integration** streams the SQL Server `offers` table into Redis JSON for Context Retriever. SQL Server and RDI run on GKE `lionel-iris-peered`; the concierge remains on the shared demo VM. SQL Server holds mutable price, availability, eligible-reward base, cancellation, and offer metadata. The static travel catalog and policy text are not all sourced from SQL Server. The deployed configuration and dated validation evidence are in [RDI.md](RDI.md).
 
 **Gemini** interprets the request, calls bounded application tools, and writes the answer. A LangCache hit skips generation. Use the configured model shown in the UI; do not promise a particular model is available without checking the current environment.
 

@@ -5,6 +5,8 @@ WORKDIR /app
 RUN uv pip install --python /app/.venv/bin/python --no-cache google-genai==2.24.0 redis-agent-memory==0.2.0 redisvl==0.23.0 'pymssql>=2.3,<3'
 COPY valuetravel /app/valuetravel
 COPY scripts /app/scripts
+COPY deployment/sqlserver /app/deployment/sqlserver
+ENV FREETDSCONF=/app/deployment/sqlserver/freetds.conf
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 CMD ["/app/.venv/bin/uvicorn","valuetravel.api:app","--host","0.0.0.0","--port","8080"]

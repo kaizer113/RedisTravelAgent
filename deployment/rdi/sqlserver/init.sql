@@ -28,14 +28,25 @@ IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE object_id = OBJECT_ID(N'dbo.offers
     @role_name=N'value_travel_cdc_reader', @supports_net_changes=0;
 GO
 EXEC sys.sp_cdc_change_job @job_type=N'capture', @pollinginterval=1;
--- CDC table enablement can create the job before SQL Agent starts it.
--- Restart only an active job, then wait for Agent's activity state to settle.
+-- Enabling CDC queues a capture job asynchronously. Let a pending launch settle
+-- before restarting so the polling change applies without duplicate start requests.
 DECLARE @job_id UNIQUEIDENTIFIER = (
   SELECT job_id FROM msdb.dbo.cdc_jobs
   WHERE database_id = DB_ID() AND job_type = N'capture'
 );
 IF @job_id IS NULL THROW 51000, 'CDC capture job was not created.', 1;
 DECLARE @deadline DATETIME2 = DATEADD(SECOND, 30, SYSUTCDATETIME());
+WHILE EXISTS (
+  SELECT 1 FROM msdb.dbo.sysjobactivity
+  WHERE job_id = @job_id AND session_id = (SELECT MAX(session_id) FROM msdb.dbo.syssessions)
+    AND run_requested_date IS NOT NULL AND start_execution_date IS NULL
+    AND stop_execution_date IS NULL
+)
+BEGIN
+  IF SYSUTCDATETIME() > @deadline THROW 51003, 'CDC capture job launch remained pending for 30 seconds. Check SQL Server Agent.', 1;
+  WAITFOR DELAY '00:00:01';
+END;
+SET @deadline = DATEADD(SECOND, 30, SYSUTCDATETIME());
 IF EXISTS (
   SELECT 1 FROM msdb.dbo.sysjobactivity
   WHERE job_id = @job_id AND session_id = (SELECT MAX(session_id) FROM msdb.dbo.syssessions)
@@ -53,7 +64,19 @@ BEGIN
     WAITFOR DELAY '00:00:01';
   END;
 END;
-EXEC sys.sp_cdc_start_job @job_type=N'capture';
+BEGIN TRY
+  EXEC sys.sp_cdc_start_job @job_type=N'capture';
+END TRY
+BEGIN CATCH
+  -- Agent may still be publishing activity for the enable-table start request.
+  -- Error 22022 also covers unrelated Agent failures: suppress it only when
+  -- activity proves a requested or running launch, then verify it below.
+  IF ERROR_NUMBER() <> 22022 OR NOT EXISTS (
+    SELECT 1 FROM msdb.dbo.sysjobactivity
+    WHERE job_id = @job_id AND session_id = (SELECT MAX(session_id) FROM msdb.dbo.syssessions)
+      AND run_requested_date IS NOT NULL AND stop_execution_date IS NULL
+  ) THROW;
+END CATCH;
 SET @deadline = DATEADD(SECOND, 30, SYSUTCDATETIME());
 WHILE NOT EXISTS (
   SELECT 1 FROM msdb.dbo.sysjobactivity

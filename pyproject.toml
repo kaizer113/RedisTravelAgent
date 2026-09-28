@@ -10,6 +10,8 @@ dependencies = [
  "httpx>=0.28",
  "pydantic-settings>=2.10",
  "pymssql>=2.3,<3",
+ "python-dotenv>=1.1",
+ "PyYAML>=6",
  "redis>=6.2",
  "redis-agent-memory==0.2.0",
  "redisvl>=0.23,<0.24",

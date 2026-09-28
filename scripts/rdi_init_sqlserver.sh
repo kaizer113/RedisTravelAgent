@@ -1,40 +1,24 @@
 #!/usr/bin/env bash
-# Start SQL Server, initialize CDC and source accounts, then seed missing offers.
-# Usage: bash scripts/rdi_start_sqlserver.sh [--no-seed]
+# Initialize the existing GKE SQL Server database, CDC, and source accounts.
+# Usage: bash scripts/rdi_init_sqlserver.sh [--no-seed]
 set -euo pipefail
 set +x
 repo_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 seed=true
 if [[ "${1:-}" == --no-seed ]]; then seed=false; shift; fi
-if [[ $# -ne 0 ]]; then echo 'Usage: rdi_start_sqlserver.sh [--no-seed]' >&2; exit 2; fi
+if [[ $# -ne 0 ]]; then echo 'Usage: rdi_init_sqlserver.sh [--no-seed]' >&2; exit 2; fi
 # This file contains locally generated shell-safe secrets. Never commit it.
 source "${SQLSERVER_ENV_FILE:-$repo_dir/.env.sqlserver}"
-for secret_name in MSSQL_SA_PASSWORD SQLSERVER_CDC_PASSWORD SQLSERVER_EDITOR_PASSWORD; do
+for secret_name in SQLSERVER_CDC_PASSWORD SQLSERVER_EDITOR_PASSWORD; do
   if [[ ! ${!secret_name:-} =~ ^[a-zA-Z0-9_-]{16,128}$ ]]; then
     echo "$secret_name must contain 16–128 shell-safe letters, digits, underscores or hyphens." >&2
     exit 1
   fi
 done
-umask 077
-sqlserver_env=$(mktemp)
-trap 'rm -f "$sqlserver_env"' EXIT
-printf 'ACCEPT_EULA=Y\nMSSQL_PID=Developer\nMSSQL_AGENT_ENABLED=true\nMSSQL_MEMORY_LIMIT_MB=2048\nMSSQL_SA_PASSWORD=%s\n' "$MSSQL_SA_PASSWORD" > "$sqlserver_env"
-sudo docker network inspect value-travel-data >/dev/null 2>&1 || sudo docker network create --label owner=lionel_giavelli --label skip_deletion=yes value-travel-data >/dev/null
-sudo docker volume inspect value-travel-sqlserver-data >/dev/null 2>&1 || sudo docker volume create --label owner=lionel_giavelli --label skip_deletion=yes value-travel-sqlserver-data >/dev/null
-if sudo docker container inspect value-travel-sqlserver >/dev/null 2>&1; then
-  sudo docker start value-travel-sqlserver >/dev/null
-else
-  sudo docker run -d --name value-travel-sqlserver --restart unless-stopped \
-    --memory 3g --memory-swap 3g --env-file "$sqlserver_env" \
-    --network value-travel-data --label owner=lionel_giavelli --label skip_deletion=yes \
-    -p "${SQLSERVER_BIND_ADDRESS:-10.42.0.3}:1433:1433" \
-    -v value-travel-sqlserver-data:/var/opt/mssql \
-    --health-cmd 'SQLCMDPASSWORD="$MSSQL_SA_PASSWORD" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -Q "SELECT 1" -o /dev/null' \
-    --health-interval 10s --health-start-period 30s --health-retries 30 \
-    mcr.microsoft.com/mssql/server:2022-latest >/dev/null
-fi
+gke_context=${GKE_CONTEXT:-gke_central-beach-194106_us-east4_lionel-iris-peered}
+kubectl --context "$gke_context" --namespace demo-access rollout status deployment/sqlserver --timeout=180s
 run_sql() {
-  sudo docker exec -i value-travel-sqlserver sh -c \
+  kubectl --context "$gke_context" --namespace demo-access exec -i deployment/sqlserver -- sh -c \
     'SQLCMDPASSWORD="$MSSQL_SA_PASSWORD" exec /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -r 1'
 }
 ready=false
@@ -67,4 +51,4 @@ GO
 SQL
 } | run_sql >/dev/null
 if [[ "$seed" == true ]]; then run_sql < "$repo_dir/deployment/rdi/sqlserver/seed.sql" >/dev/null; fi
-echo 'VALUE TRAVEL SQL Server Developer ready: Docker cap 3 GiB, SQL Server target 2048 MiB, CDC polling 1 second.'
+echo 'VALUE TRAVEL database and CDC ready on GKE SQL Server.'

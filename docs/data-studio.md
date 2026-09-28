@@ -1,6 +1,6 @@
 # VALUE TRAVEL Data Studio
 
-Open [Data Studio](http://34.21.122.27:8080/studio), or use the **Data Studio** link
+Open [Data Studio](http://34.48.172.111:8080/studio), or use the **Data Studio** link
 from the travel page. It opens directly with editing enabled; no key or login is required.
 
 ## Present the replication loop
@@ -58,6 +58,7 @@ Monetary values, IDs and other fields are validated, and all
 SQL values use parameterized queries. Redis and Context Retriever access in this
 module is read-only. The displayed table is capped at 500 rows for this small demo.
 
-Configuration names are in `.env.example`. The app reaches the SQL Server container over
-the private Docker network; RDI reaches the separately published private VM port.
+Configuration names are in `.env.example`. The app reaches GKE SQL Server through the private gateway
+`10.42.0.9:1433`, with TLS and CA/hostname validation configured in the application image. RDI runs in the same GKE cluster and uses the internal service
+`sqlserver.demo-access.svc.cluster.local:1433`.
 This is a shared synthetic demo editor, not customer identity or production RBAC.
